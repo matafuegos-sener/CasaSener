@@ -2,7 +2,7 @@
 
 import { QRCodeSVG } from "qrcode.react";
 
-const SITE_URL = "https://casasener.vercel.app";
+const SITE_URL = "https://casa-sener.vercel.app";
 
 export default function QRCodeSection() {
   return (
