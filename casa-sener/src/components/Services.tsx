@@ -1,5 +1,6 @@
 import { RefreshCw, ClipboardCheck, ShoppingBag, Scale } from "lucide-react";
 import ServiceCard from "./ServiceCard";
+import AnimateIn from "./AnimateIn";
 
 const services = [
   {
@@ -40,7 +41,7 @@ export default function Services() {
       aria-labelledby="services-heading"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <AnimateIn className="text-center mb-14">
           <p className="text-[var(--color-brand-red)] font-semibold text-sm uppercase tracking-widest mb-2">
             Lo que hacemos
           </p>
@@ -54,11 +55,13 @@ export default function Services() {
             Soluciones completas en seguridad contra incendios para todo tipo de
             establecimiento.
           </p>
-        </div>
+        </AnimateIn>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service) => (
-            <ServiceCard key={service.title} {...service} />
+          {services.map((service, i) => (
+            <AnimateIn key={service.title} delay={i * 0.1}>
+              <ServiceCard {...service} />
+            </AnimateIn>
           ))}
         </div>
       </div>

@@ -1,17 +1,18 @@
 import { ShieldCheck } from "lucide-react";
+import AnimateIn from "./AnimateIn";
 
 export default function About() {
   return (
     <section
       id="nosotros"
-      className="py-20 bg-white"
+      className="py-20 bg-[#F0F0F0]"
       aria-labelledby="about-heading"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* Photos column */}
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-4">
+          <AnimateIn direction="left" className="flex flex-col sm:flex-row lg:flex-col gap-4">
             {/* Placeholder: Guido's photo */}
             <div
               className="flex-1 bg-[var(--color-brand-light)] rounded-2xl aspect-[4/3] flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-200"
@@ -33,10 +34,10 @@ export default function About() {
               <ShieldCheck className="w-10 h-10 text-gray-400" aria-hidden="true" />
               <p className="text-xs text-gray-400 font-medium">Foto de instalaciones — próximamente</p>
             </div>
-          </div>
+          </AnimateIn>
 
           {/* Text column */}
-          <div className="flex flex-col gap-6">
+          <AnimateIn direction="right" delay={0.15} className="flex flex-col gap-6">
             <div>
               <p className="text-[var(--color-brand-red)] font-semibold text-sm uppercase tracking-widest mb-2">
                 Quiénes somos
@@ -85,7 +86,7 @@ export default function About() {
                 "Nos ocupamos de todo. Vos cumplís sin preocuparte."
               </p>
             </blockquote>
-          </div>
+          </AnimateIn>
         </div>
       </div>
     </section>
