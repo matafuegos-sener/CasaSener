@@ -42,7 +42,7 @@ export default function Services() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimateIn className="text-center mb-14">
-          <p className="text-[var(--color-brand-red)] font-semibold text-sm uppercase tracking-widest mb-2">
+          <p className="label-red font-semibold text-sm uppercase tracking-widest mb-2">
             Lo que hacemos
           </p>
           <h2
@@ -59,7 +59,7 @@ export default function Services() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, i) => (
-            <AnimateIn key={service.title} delay={i * 0.1}>
+            <AnimateIn key={service.title} delay={i * 0.1} className="h-full">
               <ServiceCard {...service} />
             </AnimateIn>
           ))}

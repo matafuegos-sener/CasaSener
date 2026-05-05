@@ -11,7 +11,7 @@ export default function Contact() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <p className="text-[var(--color-brand-red)] font-semibold text-sm uppercase tracking-widest mb-2">
+          <p className="label-red font-semibold text-sm uppercase tracking-widest mb-2">
             Contacto
           </p>
           <h2

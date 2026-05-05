@@ -39,7 +39,7 @@ export default function About() {
           {/* Text column */}
           <AnimateIn direction="right" delay={0.15} className="flex flex-col gap-6">
             <div>
-              <p className="text-[var(--color-brand-red)] font-semibold text-sm uppercase tracking-widest mb-2">
+              <p className="label-red font-semibold text-sm uppercase tracking-widest mb-2">
                 Quiénes somos
               </p>
               <h2

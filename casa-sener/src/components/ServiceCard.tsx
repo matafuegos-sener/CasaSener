@@ -19,7 +19,7 @@ export default function ServiceCard({
   );
 
   return (
-    <article className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center border border-gray-100">
+    <article className="h-full bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center border border-gray-100">
       <div
         className="w-12 h-12 bg-[var(--color-brand-red)]/10 rounded-xl flex items-center justify-center mb-4"
         aria-hidden="true"

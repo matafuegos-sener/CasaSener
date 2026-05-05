@@ -18,7 +18,7 @@ body {
   color: #1A1A1A;
 }
 
-/* Grain texture overlay — unifies dark navbar with light body */
+/* Grain texture overlay — unifica navbar con el body */
 body::before {
   content: '';
   position: fixed;
@@ -31,10 +31,18 @@ body::before {
   mix-blend-mode: multiply;
 }
 
-/* Shimmer sweep for CTA buttons */
+/* Halo blanco para labels rojas sobre fondos grises */
+.label-red {
+  color: var(--color-brand-red);
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.95),
+    0  1px  2px rgba(255, 255, 255, 0.85);
+}
+
+/* Shimmer sweep — usa transform, sin artefactos */
 @keyframes shimmer-sweep {
-  0%   { left: -65%; }
-  100% { left: 115%; }
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(320%); }
 }
 
 .btn-shimmer {
@@ -46,8 +54,8 @@ body::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -65%;
-  width: 48%;
+  left: 0;
+  width: 45%;
   height: 100%;
   background: linear-gradient(
     90deg,
@@ -55,6 +63,6 @@ body::before {
     rgba(255, 255, 255, 0.22) 50%,
     transparent 100%
   );
-  transform: skewX(-12deg);
-  animation: shimmer-sweep 3.2s ease-in-out 1.8s infinite;
+  transform: translateX(-200%);
+  animation: shimmer-sweep 3.4s ease-in-out 2s infinite;
 }
