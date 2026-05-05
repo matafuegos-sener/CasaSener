@@ -6,7 +6,7 @@ export default function Navbar() {
   const waUrl = buildWhatsAppUrl();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-white/10" style={{background: 'linear-gradient(to bottom, rgba(88,88,88,0.97), rgba(68,68,68,0.97))'}}>
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-white/10" style={{background: 'linear-gradient(to bottom, rgba(118,118,118,0.97), rgba(98,98,98,0.97))'}}>
       <nav
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
         aria-label="Navegación principal"

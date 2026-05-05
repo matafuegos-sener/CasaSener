@@ -27,6 +27,7 @@ export default function Hero() {
         }}
       />
 
+      {/* Contenido centrado — sin hijos absolute para evitar colisiones */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <p className="text-[var(--color-brand-red)] font-semibold text-sm sm:text-base uppercase tracking-widest mb-4">
           CasaSener — Insumos Contra Incendio
@@ -55,11 +56,12 @@ export default function Hero() {
         >
           Solicitar presupuesto
         </a>
+      </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1" aria-hidden="true">
-          <span className="block w-px h-8 bg-gradient-to-b from-transparent to-white/40 animate-pulse" />
-          <span className="block w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" style={{animationDelay:'0.3s'}} />
-        </div>
+      {/* Indicador de scroll — hijo directo de section, nunca cerca del botón */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1" aria-hidden="true">
+        <span className="block w-px h-8 bg-gradient-to-b from-transparent to-white/40 animate-pulse" />
+        <span className="block w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" style={{animationDelay:'0.3s'}} />
       </div>
     </section>
   );
