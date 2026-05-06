@@ -23,20 +23,20 @@ export default function Hero() {
         className="absolute inset-0"
         aria-hidden="true"
         style={{
-          background: 'radial-gradient(ellipse at 64% 50%, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.72) 100%)'
+          background: 'linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 28%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)'
         }}
       />
 
       {/* Contenido centrado — sin hijos absolute para evitar colisiones */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        <p className="text-[var(--color-brand-red)] font-semibold text-sm sm:text-base uppercase tracking-widest mb-4">
+        <p className="hero-red-text font-semibold text-sm sm:text-base uppercase tracking-widest mb-4">
           CasaSener — Insumos Contra Incendio
         </p>
 
         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
           Servicio integral de matafuegos
           <br />
-          <span className="text-[var(--color-brand-red)]">
+          <span className="hero-red-text">
             y seguridad contra incendios
           </span>
         </h1>
