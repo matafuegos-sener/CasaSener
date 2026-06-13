@@ -183,7 +183,9 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
     case "Q_TIPO":
       return ["¿Qué tipo de matafuego?"];
     case "Q_CARGA":
-      return ["¿Qué carga necesitás?"];
+      return context.extKey
+        ? [`¿Qué carga de ${PRICE_CONFIG[context.extKey].label} necesitás?`]
+        : ["¿Qué carga necesitás?"];
     case "Q_CANTIDAD":
       return ["¿Cuántas unidades?"];
     case "Q_RESULTADO":
@@ -226,8 +228,7 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
       return buildConfirmSummary(context);
     case "FIN":
       return [
-        "¡Listo! Abrimos WhatsApp con tu consulta.",
-        "Si preferís escribir directamente: 11 5318-0515",
+        "¡Perfecto! Un agente de Matafuegos Sener se comunicará con vos dentro de las próximas 24 hs.",
       ];
     case "FIN_INFO":
       return [
@@ -292,7 +293,7 @@ export function getStateView(state: ChatState): StateView {
       return {
         inputType: "buttons",
         options: [
-          { label: "Dejar mis datos", value: "contact" },
+          { label: "Quiero que me contacten", value: "contact" },
           { label: "Cambiar algo", value: "restart" },
         ],
       };
@@ -399,7 +400,7 @@ export function transition(state: ChatState, userInput: string): ChatState {
 
     case "Q_SERVICIO":
       newContext.service = userInput as ServiceType;
-      newStateKey = "Q_TIPO";
+      newStateKey = newContext.extKey ? "Q_CARGA" : "Q_TIPO";
       break;
 
     case "Q_TIPO":
@@ -526,7 +527,7 @@ export function transition(state: ChatState, userInput: string): ChatState {
 
     case "C_NOMBRE":
       newContext.nombre = userInput;
-      newStateKey = "C_RUBRO_NEGOCIO";
+      newStateKey = (newContext.rubroKey || newContext.localSubtype) ? "C_TELEFONO" : "C_RUBRO_NEGOCIO";
       break;
 
     case "C_RUBRO_NEGOCIO":
