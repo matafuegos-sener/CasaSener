@@ -89,6 +89,7 @@ export default function ChatBot() {
           style={{ backgroundColor: "var(--color-surface)" }}
           role="dialog"
           aria-label="Asistente Matafuegos Sener"
+          aria-modal="true"
         >
           {/* Header */}
           <div
@@ -104,10 +105,10 @@ export default function ChatBot() {
           </div>
 
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2 min-h-0">
+          <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2 min-h-0" aria-live="polite">
             {state.history.map((msg, i) => (
               <div
-                key={i}
+                key={`${i}-${msg.role}`}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
@@ -140,24 +141,10 @@ export default function ChatBot() {
                   <button
                     key={opt.value}
                     onClick={() => handleOption(opt.value)}
-                    className="px-3 py-1.5 text-sm rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)]"
+                    className="px-3 py-1.5 text-sm rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] hover:bg-[var(--color-brand-red)] hover:text-white hover:border-[var(--color-brand-red)]"
                     style={{
                       borderColor: "var(--color-border)",
                       color: "var(--color-brand-dark)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                        "var(--color-brand-red)";
-                      (e.currentTarget as HTMLButtonElement).style.color = "white";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--color-brand-red)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = "";
-                      (e.currentTarget as HTMLButtonElement).style.color =
-                        "var(--color-brand-dark)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--color-border)";
                     }}
                   >
                     {opt.label}
@@ -172,6 +159,7 @@ export default function ChatBot() {
                   ref={inputRef}
                   type={view.inputType === "number" ? "number" : "text"}
                   min={view.inputType === "number" ? 1 : undefined}
+                  max={view.inputType === "number" ? 9999 : undefined}
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   onKeyDown={handleKeyDown}
