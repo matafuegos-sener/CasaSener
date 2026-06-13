@@ -1,11 +1,29 @@
 @import "tailwindcss";
 
 @theme {
+  /* Brand */
   --color-brand-red: #CC2200;
   --color-brand-red-dark: #A81C00;
+  --color-brand-red-subtle: #FCECEA;
   --color-brand-dark: #1A1A1A;
   --color-brand-gray: #4A4A4A;
-  --color-brand-light: #E2E2E2;
+  --color-brand-light: #DDD9D4;
+
+  /* Section backgrounds — off-whites cálidos para que el grano sea visible */
+  --color-bg-warm: #F3F1ED;
+  --color-bg-mid: #E8E5E0;
+
+  /* Surfaces */
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F5F5F5;
+
+  /* Borders */
+  --color-border: #E0E0E0;
+  --color-border-subtle: #EBEBEB;
+
+  /* Text */
+  --color-text-muted: #6B6B6B;
+
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
@@ -14,7 +32,7 @@ html {
 }
 
 body {
-  background-color: #EBEBEB;
+  background-color: #E6E3DE;
   color: #1A1A1A;
 }
 
@@ -27,8 +45,17 @@ body::before {
   z-index: 9999;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 180px 180px;
-  opacity: 0.038;
+  opacity: 0.10;
   mix-blend-mode: multiply;
+}
+
+/* Label uppercase — base tipográfica compartida por todos los supertítulos */
+.type-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
 }
 
 /* Halo blanco para labels rojas sobre fondos grises */

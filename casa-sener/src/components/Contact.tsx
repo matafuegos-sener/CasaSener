@@ -10,13 +10,13 @@ export default function Contact() {
       aria-labelledby="contact-heading"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <p className="label-red font-semibold text-sm uppercase tracking-widest mb-2">
+        <div className="text-center mb-12">
+          <p className="type-label label-red mb-2">
             Contacto
           </p>
           <h2
             id="contact-heading"
-            className="text-3xl sm:text-4xl font-bold text-[var(--color-brand-dark)]"
+            className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--color-brand-dark)]"
           >
             Hablemos
           </h2>
@@ -28,7 +28,7 @@ export default function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
           {/* Left: Form */}
-          <div className="bg-white rounded-2xl p-8 shadow-md">
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 sm:p-8 shadow-md">
             <ContactForm />
           </div>
 
@@ -36,16 +36,16 @@ export default function Contact() {
           <div className="flex flex-col gap-6">
 
             {/* Contact info */}
-            <div className="bg-white rounded-2xl p-6 shadow-md flex flex-col gap-4">
+            <div className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-md flex flex-col gap-4">
               <h3 className="font-bold text-[var(--color-brand-dark)] text-lg">Datos de contacto</h3>
 
               <a
-                href="tel:+541145550000"
+                href="tel:+5491153180515"
                 className="flex items-center gap-3 text-[var(--color-brand-gray)] hover:text-[var(--color-brand-red)] transition-colors"
-                aria-label="Llamar al +54 11 4555-0000"
+                aria-label="Llamar al 11 5318-0515"
               >
                 <Phone className="w-5 h-5 text-[var(--color-brand-red)] shrink-0" aria-hidden="true" />
-                <span>+54 11 4555-0000</span>
+                <span>11 5318-0515</span>
               </a>
 
               <a
@@ -71,8 +71,8 @@ export default function Contact() {
                 height="100%"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Ubicación de CasaSener"
-                aria-label="Mapa de ubicación de CasaSener en Buenos Aires"
+                title="Ubicación de Matafuegos Sener"
+                aria-label="Mapa de ubicación de Matafuegos Sener en Buenos Aires"
               />
             </div>
 

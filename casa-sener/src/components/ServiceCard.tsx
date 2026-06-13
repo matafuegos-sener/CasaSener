@@ -5,38 +5,32 @@ interface ServiceCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  audience: string;
 }
 
 export default function ServiceCard({
   icon: Icon,
   title,
   description,
-  audience,
 }: ServiceCardProps) {
   const waUrl = buildWhatsAppUrl(
     `Hola, quiero consultar sobre el servicio: ${title}`
   );
 
   return (
-    <article className="h-full bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center border border-gray-100">
+    <article className="h-full bg-[var(--color-surface)] rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border border-[var(--color-border)] border-t-2 border-t-[var(--color-brand-red)]">
       <div
-        className="w-12 h-12 bg-[var(--color-brand-red)]/10 rounded-xl flex items-center justify-center mb-4"
+        className="w-12 h-12 bg-[var(--color-brand-red-subtle)] rounded-xl flex items-center justify-center mb-4"
         aria-hidden="true"
       >
         <Icon className="w-6 h-6 text-[var(--color-brand-red)]" />
       </div>
 
-      <h3 className="text-lg font-bold text-[var(--color-brand-dark)] mb-2">
+      <h3 className="text-lg font-bold leading-snug text-[var(--color-brand-dark)] mb-2">
         {title}
       </h3>
 
       <p className="text-[var(--color-brand-gray)] text-sm leading-relaxed flex-1 mb-4">
         {description}
-      </p>
-
-      <p className="text-xs text-[var(--color-brand-gray)]/70 font-medium uppercase tracking-wide mb-4">
-        Para: {audience}
       </p>
 
       <a

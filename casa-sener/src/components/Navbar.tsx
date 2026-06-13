@@ -1,36 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import QuoteModal from "./QuoteModal";
 
 export default function Navbar() {
-  const waUrl = buildWhatsAppUrl();
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-white/10" style={{background: 'linear-gradient(to bottom, rgba(118,118,118,0.97), rgba(98,98,98,0.97))'}}>
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-black/8" style={{background: 'linear-gradient(to bottom, rgba(228,228,228,0.97), rgba(218,218,218,0.97))'}}>
       <nav
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
         aria-label="Navegación principal"
       >
-        <Link href="/" aria-label="CasaSener — Inicio">
+        <Link href="/" aria-label="Matafuegos Sener — Inicio">
           <Image
-            src="/logo.png"
-            alt="CasaSener — Insumos Contra Incendio"
-            width={56}
-            height={56}
-            className="rounded-full"
+            src="/logo-nuevo.png"
+            alt="Matafuegos Sener — Insumos Contra Incendio"
+            width={1004}
+            height={355}
+            style={{ height: '44px', width: 'auto' }}
             priority
           />
         </Link>
 
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-[var(--color-brand-red)] hover:bg-[var(--color-brand-red-dark)] text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:ring-offset-2 focus:ring-offset-[var(--color-brand-dark)]"
-          aria-label="Solicitar presupuesto por WhatsApp"
-        >
-          Solicitar presupuesto
-        </a>
+        <QuoteModal variant="navbar" />
       </nav>
     </header>
   );
