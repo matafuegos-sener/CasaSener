@@ -1,9 +1,7 @@
 import Image from "next/image";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import QuoteModal from "./QuoteModal";
 
 export default function Hero() {
-  const waUrl = buildWhatsAppUrl();
 
   return (
     <section
@@ -48,17 +46,8 @@ export default function Hero() {
           Rápido, legal y sin complicaciones.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+        <div className="flex justify-center items-center">
           <QuoteModal variant="hero" />
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-white/70 text-white hover:bg-white hover:text-[var(--color-brand-dark)] font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent"
-            aria-label="Comunicarse por WhatsApp"
-          >
-            Comunicarse por WhatsApp
-          </a>
         </div>
       </div>
 

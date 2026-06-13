@@ -30,6 +30,18 @@ export default function Footer() {
               Insumos y servicios contra incendios.<br />
               CABA y Gran Buenos Aires.
             </p>
+            <div className="flex items-center gap-3 mt-1">
+              <Image
+                src="/sello_iram.png"
+                alt="Sello IRAM Conformidad Norma 3610"
+                width={552}
+                height={196}
+                style={{ height: "36px", width: "auto", filter: "invert(1)", opacity: 0.7 }}
+              />
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wide leading-tight">
+                Trabajamos bajo<br />normas IRAM
+              </p>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -58,8 +70,8 @@ export default function Footer() {
             </h3>
             <ul className="flex flex-col gap-2 text-sm text-white/70">
               <li>
-                <a href="tel:+541145550000" className="hover:text-white transition-colors">
-                  +54 11 4555-0000
+                <a href="tel:+5491153180515" className="hover:text-white transition-colors">
+                  +54 11 5318-0515
                 </a>
               </li>
               <li>
@@ -67,14 +79,17 @@ export default function Footer() {
                   contacto@casasener.com.ar
                 </a>
               </li>
-              <li>Av. Ejemplo 1234, Buenos Aires</li>
+              <li>Barrio Flores, Buenos Aires</li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-6 text-center">
+        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row sm:justify-between gap-1 text-center sm:text-left">
           <p className="text-white/40 text-xs">
-            © {year} Sener Matafuegos — Hab. GCBA DISFC-2024-179-GCABA-DGFYCO. Todos los derechos reservados.
+            © {year} Sener Matafuegos. Todos los derechos reservados.
+          </p>
+          <p className="text-white/30 text-xs">
+            Hab. GCBA DISFC-2024-179-GCABA-DGFYCO – DPS 511 &nbsp;·&nbsp; C.U.I.T. 20-34142827-1
           </p>
         </div>
       </div>

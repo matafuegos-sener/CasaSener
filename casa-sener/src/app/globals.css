@@ -105,3 +105,70 @@ body::before {
   transform: translateX(-200%);
   animation: shimmer-sweep 3.4s ease-in-out 2s infinite;
 }
+
+/* Navbar + logo — luz secuencial sincronizada (ciclo 7s) */
+@keyframes nav-shimmer-sweep {
+  0%    { transform: translateX(-150%); opacity: 0; }
+  1%    { transform: translateX(-150%); opacity: 1; }
+  20%   { transform: translateX(620%);  opacity: 1; }
+  22%   { transform: translateX(620%);  opacity: 0; }
+  22.5% { transform: translateX(-150%); opacity: 0; }
+  100%  { transform: translateX(-150%); opacity: 0; }
+}
+
+@keyframes logo-shimmer-sweep {
+  0%    { transform: translateX(-200%); opacity: 0; }
+  33%   { transform: translateX(-200%); opacity: 0; }
+  34%   { transform: translateX(-200%); opacity: 1; }
+  46%   { transform: translateX(320%);  opacity: 1; }
+  48%   { transform: translateX(320%);  opacity: 0; }
+  48.5% { transform: translateX(-200%); opacity: 0; }
+  100%  { transform: translateX(-200%); opacity: 0; }
+}
+
+/* Aplicado al <header> */
+.nav-shimmer {
+  overflow: hidden;
+}
+
+.nav-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 18%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.30) 50%,
+    transparent 100%
+  );
+  transform: translateX(-150%);
+  opacity: 0;
+  animation: nav-shimmer-sweep 7s ease-in-out 2s infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Aplicado al wrapper del logo */
+.logo-shimmer {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+}
+
+.logo-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 55%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.50) 50%,
+    transparent 100%
+  );
+  transform: translateX(-200%);
+  opacity: 0;
+  animation: logo-shimmer-sweep 7s ease-in-out 2s infinite;
+  pointer-events: none;
+}

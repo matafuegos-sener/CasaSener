@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Calculator, ArrowLeft } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, Calculator, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import {
   PRICE_CONFIG,
@@ -27,7 +28,10 @@ type Rubro = (typeof RUBROS)[number];
 
 export default function QuoteModal({ variant = "hero" }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState<"quote" | "contact">("quote");
+  const [step, setStep] = useState<"quote" | "contact" | "success">("quote");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
 
   // Quote state
   const [service, setService] = useState<ServiceType>("recarga");
@@ -41,7 +45,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [direccion, setDireccion] = useState("");
-  const [horarios, setHorarios] = useState("");
+  const [horarios, setHorarios] = useState("9 a 18");
 
   useEffect(() => {
     setCapacityIndex(0);
@@ -58,6 +62,12 @@ export default function QuoteModal({ variant = "hero" }: Props) {
     },
     [handleClose]
   );
+
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener("sener:open-quote", handler);
+    return () => window.removeEventListener("sener:open-quote", handler);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -78,6 +88,43 @@ export default function QuoteModal({ variant = "hero" }: Props) {
     const cap = config.capacities[capacityIndex];
     const units = quantity === 1 ? "matafuego" : "matafuegos";
     return `${serviceLabel} · ${quantity} ${units} · ${config.label} · ${cap?.label ?? ""}`;
+  }
+
+  const requiredMissing =
+    !nombre.trim() || !telefono.trim() || !rubro;
+
+  async function handleSubmit() {
+    if (requiredMissing) {
+      setShowValidation(true);
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const serviceLabel = service === "recarga" ? "Recarga" : "Venta nueva";
+      const cap = config.capacities[capacityIndex];
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceLabel,
+          extLabel: config.label,
+          capacityLabel: cap?.label ?? "",
+          quantity,
+          unitPrice: result.type === "ok" ? result.unitPrice : null,
+          total: result.type === "ok" ? result.total : null,
+          discountPct: result.type === "ok" ? result.discountPct : 0,
+          nombre, rubro, telefono, email, direccion,
+          horarios: `Lun a Vie · ${horarios} hs`,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setStep("success");
+    } catch {
+      setSubmitError("No se pudo enviar el pedido. Intentá de nuevo o comunicate por WhatsApp.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const navbarClass =
@@ -108,7 +155,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
         Calcular presupuesto
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <>
           {/* Overlay */}
           <div
@@ -325,21 +372,21 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                         {/* Nombre empresa | Rubro */}
                         <div className="flex flex-col gap-1">
                           <label htmlFor="contact-nombre" className="type-label text-[var(--color-text-muted)]">
-                            Nombre empresa
+                            Nombre empresa <span className="text-[var(--color-brand-red)]">*</span>
                           </label>
                           <input
                             id="contact-nombre"
                             type="text"
                             value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent"
+                            onChange={(e) => { setNombre(e.target.value); setShowValidation(false); }}
+                            className={`w-full border rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent ${showValidation && !nombre.trim() ? "border-red-400 bg-red-50" : "border-[var(--color-border)]"}`}
                             placeholder="Ej: Restaurante El Buen Sabor"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1">
                           <label htmlFor="contact-rubro" className="type-label text-[var(--color-text-muted)]">
-                            Rubro
+                            Rubro <span className="text-[var(--color-brand-red)]">*</span>
                           </label>
                           <select
                             id="contact-rubro"
@@ -356,14 +403,14 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                         {/* Teléfono | Horarios */}
                         <div className="flex flex-col gap-1">
                           <label htmlFor="contact-tel" className="type-label text-[var(--color-text-muted)]">
-                            Teléfono
+                            Teléfono <span className="text-[var(--color-brand-red)]">*</span>
                           </label>
                           <input
                             id="contact-tel"
                             type="tel"
                             value={telefono}
-                            onChange={(e) => setTelefono(e.target.value)}
-                            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent"
+                            onChange={(e) => { setTelefono(e.target.value); setShowValidation(false); }}
+                            className={`w-full border rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent ${showValidation && !telefono.trim() ? "border-red-400 bg-red-50" : "border-[var(--color-border)]"}`}
                             placeholder="Ej: 11 5318-0515"
                           />
                         </div>
@@ -372,14 +419,21 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                           <label htmlFor="contact-horarios" className="type-label text-[var(--color-text-muted)]">
                             Horarios
                           </label>
-                          <input
-                            id="contact-horarios"
-                            type="text"
-                            value={horarios}
-                            onChange={(e) => setHorarios(e.target.value)}
-                            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent"
-                            placeholder="Ej: Lun–Vie 9–18 hs"
-                          />
+                          <div className="flex gap-1.5">
+                            <div className="border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-gray)] bg-[var(--color-surface-subtle)] shrink-0 select-none">
+                              Lun a Vie
+                            </div>
+                            <select
+                              id="contact-horarios"
+                              value={horarios}
+                              onChange={(e) => setHorarios(e.target.value)}
+                              className="flex-1 min-w-0 border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent"
+                            >
+                              <option value="9 a 18">9 a 18 hs</option>
+                              <option value="9 a 12">9 a 12 hs</option>
+                              <option value="12 a 18">12 a 18 hs</option>
+                            </select>
+                          </div>
                         </div>
 
                         {/* Email — ancho completo */}
@@ -414,9 +468,74 @@ export default function QuoteModal({ variant = "hero" }: Props) {
 
                       </div>
 
+                      {/* Errores */}
+                      {showValidation && requiredMissing && (
+                        <p className="text-xs text-red-600 text-center">
+                          Completá nombre empresa y teléfono para continuar.
+                        </p>
+                      )}
+                      {submitError && (
+                        <p className="text-xs text-red-600 text-center">{submitError}</p>
+                      )}
+
                       {/* CTA */}
-                      <button type="button" className={ctaClass}>
-                        Realizar pedido
+                      <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className={`${ctaClass} disabled:opacity-60 disabled:cursor-not-allowed`}
+                      >
+                        {isSubmitting ? "Enviando…" : "Realizar pedido"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {step === "success" && (
+                  <>
+                    {/* Header éxito */}
+                    <div className="relative flex items-center justify-center px-6 py-4 border-b border-[var(--color-border)]">
+                      <h2 className="text-base font-bold text-[var(--color-brand-dark)]">
+                        Pedido recibido
+                      </h2>
+                      <button onClick={handleClose} className={`absolute right-6 ${iconBtnClass}`} aria-label="Cerrar">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Cuerpo éxito */}
+                    <div className="px-6 py-8 flex flex-col items-center gap-5 text-center">
+                      <CheckCircle2
+                        className="w-14 h-14 text-emerald-500"
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
+
+                      <div className="flex flex-col gap-2">
+                        <p className="text-lg font-bold text-[var(--color-brand-dark)]">
+                          ¡Tu solicitud fue enviada!
+                        </p>
+                        <p className="text-sm text-[var(--color-brand-gray)] max-w-sm leading-relaxed">
+                          En las próximas 24 horas un agente de Matafuegos Sener
+                          se va a comunicar con vos por WhatsApp para confirmar
+                          los detalles y coordinar el servicio.
+                        </p>
+                      </div>
+
+                      <div className="w-full rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border)] px-5 py-3 text-left">
+                        <p className="type-label text-[var(--color-text-muted)] mb-1">Tu consulta</p>
+                        <p className="text-sm font-semibold text-[var(--color-brand-dark)]">
+                          {buildSummary()}
+                        </p>
+                        {result.type === "ok" && (
+                          <p className="text-sm text-[var(--color-brand-red)] font-bold mt-0.5">
+                            Total estimado: ${result.total.toLocaleString("es-AR")}
+                          </p>
+                        )}
+                      </div>
+
+                      <button type="button" onClick={handleClose} className={ctaClass}>
+                        Cerrar
                       </button>
                     </div>
                   </>
@@ -425,7 +544,8 @@ export default function QuoteModal({ variant = "hero" }: Props) {
               </div>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

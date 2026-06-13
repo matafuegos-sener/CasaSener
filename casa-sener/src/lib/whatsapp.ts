@@ -1,4 +1,4 @@
-export const WA_NUMBER = "5491155550000"; // Placeholder: +54 9 11 5555-0000
+export const WA_NUMBER = "5491153180515";
 
 export const WA_DEFAULT_MESSAGE =
   "Hola, quiero solicitar un presupuesto de matafuegos.";
