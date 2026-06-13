@@ -171,21 +171,23 @@ export default function QuoteModal({ variant = "hero" }: Props) {
             aria-modal="true"
             aria-labelledby="quote-title"
           >
-            <div className="flex min-h-full items-center justify-center px-4 py-20">
+            <div className="flex min-h-full items-center justify-center px-4 py-8 sm:py-20">
               <div className="relative bg-[var(--color-surface)] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-4">
 
                 {step === "quote" ? (
                   <>
-                    {/* Header — logo izq, título centrado, X der */}
+                    {/* Header — logo izq (desktop), título centrado, X der */}
                     <div className="relative flex items-center px-6 py-4 border-b border-[var(--color-border)]">
-                      <Image
-                        src="/logo-nuevo.png"
-                        alt="Matafuegos Sener"
-                        width={1004}
-                        height={355}
-                        style={{ height: "32px", width: "auto" }}
-                      />
-                      <div className="absolute inset-x-0 flex flex-col items-center pointer-events-none px-24">
+                      <div className="hidden sm:block shrink-0">
+                        <Image
+                          src="/logo-nuevo.png"
+                          alt="Matafuegos Sener"
+                          width={1004}
+                          height={355}
+                          style={{ height: "32px", width: "auto" }}
+                        />
+                      </div>
+                      <div className="absolute inset-x-0 flex flex-col items-center pointer-events-none px-12 sm:px-24">
                         <h2
                           id="quote-title"
                           className="text-base font-bold text-[var(--color-brand-dark)] text-center"

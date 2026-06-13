@@ -32,7 +32,7 @@ export default function Hero() {
           Matafuegos Sener — Insumos Contra Incendio
         </p>
 
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6">
+        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight mb-6">
           <span className="hero-red-text">
             Servicio integral de matafuegos
           </span>

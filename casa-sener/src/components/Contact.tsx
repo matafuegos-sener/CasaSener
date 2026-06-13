@@ -80,7 +80,7 @@ export default function Contact() {
             <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span>Barrio Flores, Ciudad Autónoma de Buenos Aires</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <div className="opacity-40 rounded overflow-hidden" role="img" aria-label={`Código QR para ${SITE_URL}`}>
               <QRCodeSVG value={SITE_URL} size={52} bgColor="transparent" fgColor="#ffffff" />
             </div>

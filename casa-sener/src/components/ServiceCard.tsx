@@ -58,18 +58,18 @@ export default function ServiceCard({ icon: Icon, title, description, detail, bu
           />
           <div className="fixed inset-0 z-[201] overflow-y-auto">
             <div className="flex min-h-full items-center justify-center px-4 py-20">
-              <div className="relative bg-[var(--color-surface)] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-row">
+              <div className="relative bg-[var(--color-surface)] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col sm:flex-row">
 
-                {/* Columna izquierda — roja */}
-                <div className="bg-[var(--color-brand-red)] w-48 shrink-0 flex flex-col items-start justify-start gap-4 px-7 py-8">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center" aria-hidden="true">
-                    <Icon className="w-6 h-6 text-white" />
+                {/* Roja — barra superior en mobile, columna en desktop */}
+                <div className="bg-[var(--color-brand-red)] sm:w-48 shrink-0 flex flex-row sm:flex-col items-center sm:items-start sm:justify-start gap-3 sm:gap-4 px-5 sm:px-7 py-4 sm:py-8 pr-14 sm:pr-7">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0" aria-hidden="true">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-white leading-snug">{title}</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-white leading-snug">{title}</h2>
                 </div>
 
-                {/* Columna derecha — contenido */}
-                <div className="flex flex-col flex-1 min-w-0 px-7 pt-10 pb-7">
+                {/* Contenido */}
+                <div className="flex flex-col flex-1 min-w-0 px-5 sm:px-7 pt-5 sm:pt-10 pb-5 sm:pb-7">
 
                   {/* X — posición fija sin invadir el texto */}
                   <button

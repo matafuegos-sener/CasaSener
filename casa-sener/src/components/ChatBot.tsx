@@ -95,8 +95,12 @@ export default function ChatBot() {
       {/* Floating trigger button */}
       <button
         onClick={isOpen ? handleClose : handleOpen}
-        className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
-        style={{ backgroundColor: "var(--color-brand-red)", color: "white" }}
+        className="fixed right-4 sm:right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
+        style={{
+          backgroundColor: "var(--color-brand-red)",
+          color: "white",
+          bottom: "max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))",
+        }}
         aria-label={isOpen ? "Cerrar asistente" : "Hacer tu consulta"}
       >
         {isOpen ? (
@@ -112,7 +116,7 @@ export default function ChatBot() {
       {/* Chat panel */}
       {isOpen && (
         <div
-          className="fixed bottom-20 right-6 z-[100] w-80 max-h-[520px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="fixed bottom-20 right-3 sm:right-6 z-[100] w-[calc(100vw-1.5rem)] sm:w-80 max-h-[70dvh] sm:max-h-[520px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{ backgroundColor: "var(--color-surface)" }}
           role="dialog"
           aria-label="Asistente Matafuegos Sener"
