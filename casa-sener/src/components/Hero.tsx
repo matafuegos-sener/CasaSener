@@ -12,7 +12,7 @@ export default function Hero() {
         src="/hero.jpg"
         alt="Matafuegos en acción"
         fill
-        className="object-cover object-right sm:object-center"
+        className="object-cover object-[90%_18%] sm:object-center"
         priority
         quality={90}
       />
@@ -42,8 +42,8 @@ export default function Hero() {
         {/* Título + subtítulo — centro vertical */}
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
           <h1
-            className="font-bold text-white"
-            style={{ fontSize: 'clamp(2rem, 10vw, 2.5rem)', letterSpacing: '-0.03em', lineHeight: 1.12 }}
+            className="font-bold text-white w-full"
+            style={{ fontSize: 'clamp(2.5rem, 12vw, 3.2rem)', letterSpacing: '-0.03em', lineHeight: 1.08 }}
           >
             <span className="hero-red-text block">Servicio integral</span>
             <span className="hero-red-text block">de matafuegos</span>
@@ -51,8 +51,9 @@ export default function Hero() {
             <span className="block">contra incendios</span>
           </h1>
 
-          <p className="text-lg text-white/85 leading-relaxed max-w-xs">
-            Recargamos, controlamos y asesoramos.
+          <p className="text-xl text-white/85 leading-relaxed max-w-xs">
+            Recargamos, controlamos<br />
+            y asesoramos.<br />
             Rápido, legal y sin complicaciones.
           </p>
         </div>

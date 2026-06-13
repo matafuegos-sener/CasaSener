@@ -99,14 +99,13 @@ export default function ChatBot() {
         className="sm:hidden fixed right-4 z-[100] w-14 h-14 rounded-full flex items-center justify-center border-2 border-white shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
         style={{
           bottom: "max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))",
-          backgroundColor: isOpen ? "var(--color-brand-red)" : "rgba(15,15,15,0.55)",
-          backdropFilter: "blur(8px)",
+          backgroundColor: "var(--color-brand-red)",
         }}
         aria-label={isOpen ? "Cerrar asistente" : "Hacé tu consulta"}
       >
         {isOpen
           ? <X className="w-5 h-5 text-white" aria-hidden="true" />
-          : <MessageCircle className="w-5 h-5" style={{ color: "var(--color-brand-red)" }} aria-hidden="true" />
+          : <MessageCircle className="w-5 h-5 text-white" aria-hidden="true" />
         }
       </button>
 

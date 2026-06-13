@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AnimateIn from "./AnimateIn";
 
@@ -32,11 +32,44 @@ const steps = [
   },
 ];
 
+const INTERVAL_MS = 3500;
+
 export default function HowItWorks() {
   const [current, setCurrent] = useState(0);
+  const [tick, setTick] = useState(0);
+  const touchStartX = useRef(0);
 
-  function prev() { setCurrent((c) => Math.max(0, c - 1)); }
-  function next() { setCurrent((c) => Math.min(steps.length - 1, c + 1)); }
+  // Auto-advance — se reinicia cuando el usuario interactúa (tick cambia)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((c) => (c + 1) % steps.length);
+    }, INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [tick]);
+
+  function goTo(i: number) {
+    setCurrent(i);
+    setTick((t) => t + 1);
+  }
+
+  function goPrev() {
+    goTo((current - 1 + steps.length) % steps.length);
+  }
+
+  function goNext() {
+    goTo((current + 1) % steps.length);
+  }
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      diff > 0 ? goNext() : goPrev();
+    }
+  }
 
   return (
     <section
@@ -55,23 +88,27 @@ export default function HowItWorks() {
           </h2>
         </AnimateIn>
 
-        {/* ── MOBILE: slider ── */}
+        {/* ── MOBILE: slider con loop, swipe y auto-advance ── */}
         <div className="sm:hidden">
-          <div className="overflow-hidden">
+          <div
+            className="overflow-hidden rounded-2xl"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
             <div
-              className="flex transition-transform duration-300 ease-in-out"
+              className="flex transition-transform duration-350 ease-in-out"
               style={{ transform: `translateX(-${current * 100}%)` }}
             >
               {steps.map((step) => (
-                <div key={step.number} className="w-full shrink-0 px-1">
-                  <div className="bg-[var(--color-surface)] rounded-2xl p-8 text-center shadow-sm border border-[var(--color-border)] min-h-[220px] flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-[var(--color-surface)] border-2 border-[var(--color-brand-red)] flex items-center justify-center mb-5 shrink-0">
-                      <span className="text-sm font-bold text-[var(--color-brand-red)]">{step.number}</span>
+                <div key={step.number} className="w-full shrink-0 px-0.5">
+                  <div className="bg-[var(--color-surface)] rounded-2xl px-7 py-10 text-center shadow-sm border border-[var(--color-border)] min-h-[260px] flex flex-col items-center justify-center gap-5">
+                    <div className="w-16 h-16 rounded-full bg-[var(--color-surface)] border-2 border-[var(--color-brand-red)] flex items-center justify-center shrink-0">
+                      <span className="text-base font-bold text-[var(--color-brand-red)]">{step.number}</span>
                     </div>
-                    <h3 className="font-bold text-[var(--color-brand-dark)] mb-3 leading-snug">
+                    <h3 className="text-xl font-bold text-[var(--color-brand-dark)] leading-snug">
                       {step.title}
                     </h3>
-                    <p className="text-[var(--color-brand-gray)] text-sm leading-relaxed">
+                    <p className="text-base text-[var(--color-brand-gray)] leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -83,9 +120,8 @@ export default function HowItWorks() {
           {/* Controles */}
           <div className="flex items-center justify-between mt-6 px-1">
             <button
-              onClick={prev}
-              disabled={current === 0}
-              className="w-10 h-10 rounded-full border-2 border-[var(--color-brand-red)] flex items-center justify-center text-[var(--color-brand-red)] disabled:opacity-25 transition-opacity"
+              onClick={goPrev}
+              className="w-11 h-11 rounded-full border-2 border-[var(--color-brand-red)] flex items-center justify-center text-[var(--color-brand-red)] transition-opacity hover:opacity-70"
               aria-label="Paso anterior"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -95,11 +131,11 @@ export default function HowItWorks() {
               {steps.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setCurrent(i)}
-                  className={`rounded-full transition-all duration-200 ${
+                  onClick={() => goTo(i)}
+                  className={`rounded-full transition-all duration-300 ${
                     i === current
-                      ? "w-5 h-2.5 bg-[var(--color-brand-red)]"
-                      : "w-2.5 h-2.5 bg-[var(--color-border)]"
+                      ? "w-6 h-2.5 bg-[var(--color-brand-red)]"
+                      : "w-2.5 h-2.5 bg-[var(--color-border)] hover:bg-[var(--color-brand-red)]/40"
                   }`}
                   aria-label={`Ir al paso ${i + 1}`}
                 />
@@ -107,9 +143,8 @@ export default function HowItWorks() {
             </div>
 
             <button
-              onClick={next}
-              disabled={current === steps.length - 1}
-              className="w-10 h-10 rounded-full border-2 border-[var(--color-brand-red)] flex items-center justify-center text-[var(--color-brand-red)] disabled:opacity-25 transition-opacity"
+              onClick={goNext}
+              className="w-11 h-11 rounded-full border-2 border-[var(--color-brand-red)] flex items-center justify-center text-[var(--color-brand-red)] transition-opacity hover:opacity-70"
               aria-label="Paso siguiente"
             >
               <ChevronRight className="w-5 h-5" />

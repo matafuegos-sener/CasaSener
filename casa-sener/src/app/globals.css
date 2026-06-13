@@ -78,6 +78,16 @@ body::before {
     0 0 40px rgba(204, 34, 0, 0.3);
 }
 
+/* Mobile: fondo oscuro texturado → sombra blanca para que el rojo destaque */
+@media (max-width: 639px) {
+  .hero-red-text {
+    text-shadow:
+      0 0 28px rgba(255, 255, 255, 0.70),
+      0 0 10px rgba(255, 255, 255, 0.50),
+      0 0 50px rgba(204, 34, 0, 0.45);
+  }
+}
+
 /* Shimmer sweep — usa transform, sin artefactos */
 @keyframes shimmer-sweep {
   0%   { transform: translateX(-200%); }

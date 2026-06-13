@@ -81,6 +81,21 @@ const faqs: { q: string; a: ReactNode; schemaText: string }[] = [
     a: "Es una prueba de presión que verifica la integridad del cilindro del matafuego. La normativa la exige cada 5 años para equipos de polvo ABC y HCFC. Sin ella, el equipo no está apto para uso aunque esté cargado, y el certificado no es válido.",
     schemaText: "Es una prueba de presión que verifica la integridad del cilindro del matafuego. La normativa la exige cada 5 años para equipos de polvo ABC y HCFC. Sin ella, el equipo no está apto para uso aunque esté cargado.",
   },
+  {
+    q: "¿Qué pasa si el matafuego no tiene etiqueta, está dañado o le faltan las trabas?",
+    a: "Cualquiera de esas tres situaciones lo deja fuera de servicio de forma inmediata. Sin etiqueta legible no se puede verificar la fecha de fabricación ni el historial de recarga. Si tiene corrosión, golpes o le falta el precinto o traba de seguridad, ninguna empresa habilitada puede recargarlo. En una inspección de la AGC, ese equipo se considera como si no existiera.",
+    schemaText: "Cualquiera de esas tres situaciones lo deja fuera de servicio de forma inmediata. Sin etiqueta legible no se puede verificar la fecha de fabricación ni el historial de recarga. Si tiene corrosión, golpes o le falta el precinto o traba de seguridad, ninguna empresa habilitada puede recargarlo. En una inspección de la AGC, ese equipo se considera como si no existiera.",
+  },
+  {
+    q: "¿Cuánto tiempo dura un matafuego?",
+    a: "La mayoría de los equipos (polvo ABC, AFFF, agua) tiene una vida útil máxima de 20 años desde la fecha de fabricación; los de CO₂ llegan hasta 30. Pero si antes de ese plazo vence la prueba hidráulica — obligatoria cada 5 años — el equipo queda fuera de servicio aunque sea casi nuevo.",
+    schemaText: "La mayoría de los equipos (polvo ABC, AFFF, agua) tiene una vida útil máxima de 20 años desde la fecha de fabricación; los de CO₂ llegan hasta 30. Pero si antes de ese plazo vence la prueba hidráulica — obligatoria cada 5 años — el equipo queda fuera de servicio aunque sea casi nuevo.",
+  },
+  {
+    q: "¿Una vez vencida la vida útil se puede seguir usando?",
+    a: "No. Al alcanzar la vida útil máxima el equipo debe retirarse e inutilizarse de forma definitiva: la normativa exige aplastarlo o cortar la rosca del recipiente para que no pueda volver a usarse como envase a presión. Ninguna empresa habilitada puede recargarlo ni repararlo.",
+    schemaText: "No. Al alcanzar la vida útil máxima el equipo debe retirarse e inutilizarse de forma definitiva: la normativa exige aplastarlo o cortar la rosca del recipiente para que no pueda volver a usarse como envase a presión. Ninguna empresa habilitada puede recargarlo ni repararlo.",
+  },
 ];
 
 const faqSchema = {
