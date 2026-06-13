@@ -6,7 +6,7 @@ import {
   initialState,
   getStateView,
   transition,
-  buildWhatsAppUrl,
+  buildQuotePayload,
 } from "@/data/chatbot-machine";
 import type { ChatState } from "@/data/chatbot-machine";
 
@@ -14,6 +14,8 @@ export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<ChatState>(initialState);
   const [textInput, setTextInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -25,14 +27,6 @@ export default function ChatBot() {
     if (!isOpen) return;
     inputRef.current?.focus();
   }, [isOpen, state.stateKey]);
-
-  useEffect(() => {
-    if (state.stateKey === "FIN") {
-      window.open(buildWhatsAppUrl(state.context), "_blank");
-    }
-    // state.context is stable when stateKey becomes "FIN" — safe to omit
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.stateKey]);
 
   useEffect(() => {
     const handler = () => setIsOpen(true);
@@ -48,9 +42,32 @@ export default function ChatBot() {
     setIsOpen(false);
     setState(initialState);
     setTextInput("");
+    setSubmitError(false);
+  }
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setSubmitError(false);
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildQuotePayload(state.context)),
+      });
+      if (!res.ok) throw new Error("error");
+      setState((prev) => transition(prev, "enviar"));
+    } catch {
+      setSubmitError(true);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleOption(value: string) {
+    if (state.stateKey === "C_CONFIRMAR" && value === "enviar") {
+      handleConfirm();
+      return;
+    }
     setState((prev) => transition(prev, value));
   }
 
@@ -67,6 +84,7 @@ export default function ChatBot() {
   function handleReset() {
     setState(initialState);
     setTextInput("");
+    setSubmitError(false);
   }
 
   const view = getStateView(state);
@@ -145,20 +163,31 @@ export default function ChatBot() {
             style={{ borderColor: "var(--color-border)" }}
           >
             {view.inputType === "buttons" && view.options && (
-              <div className="flex flex-wrap gap-2">
-                {view.options.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleOption(opt.value)}
-                    className="px-3 py-1.5 text-sm rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] hover:bg-[var(--color-brand-red)] hover:text-white hover:border-[var(--color-brand-red)]"
-                    style={{
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-brand-dark)",
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-2">
+                  {view.options.map((opt) => {
+                    const isConfirm = stateKey === "C_CONFIRMAR" && opt.value === "enviar";
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleOption(opt.value)}
+                        disabled={isConfirm && submitting}
+                        className="px-3 py-1.5 text-sm rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] hover:bg-[var(--color-brand-red)] hover:text-white hover:border-[var(--color-brand-red)] disabled:opacity-50"
+                        style={{
+                          borderColor: "var(--color-border)",
+                          color: "var(--color-brand-dark)",
+                        }}
+                      >
+                        {isConfirm && submitting ? "Enviando…" : opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {submitError && (
+                  <p className="text-xs" style={{ color: "var(--color-brand-red)" }}>
+                    Error al enviar. Intentá de nuevo.
+                  </p>
+                )}
               </div>
             )}
 

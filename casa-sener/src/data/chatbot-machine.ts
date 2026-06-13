@@ -602,7 +602,29 @@ export const initialState: ChatState = {
   ],
 };
 
-// ─── WhatsApp URL builder ────────────────────────────────────────────────────
+// ─── Quote payload builder (para POST a /api/quote) ─────────────────────────
+
+export function buildQuotePayload(context: ChatContext) {
+  const { service, extKey, quantity, quoteResult } = context;
+  const cap = resolveCapacity(context);
+  return {
+    serviceLabel:   service ? getServiceLabel(service) : "—",
+    extLabel:       extKey ? PRICE_CONFIG[extKey].label : "—",
+    capacityLabel:  cap?.label ?? "—",
+    quantity:       quantity ?? 0,
+    unitPrice:      quoteResult?.type === "ok" ? quoteResult.unitPrice : null,
+    total:          quoteResult?.type === "ok" ? quoteResult.total : null,
+    discountPct:    quoteResult?.type === "ok" ? quoteResult.discountPct : 0,
+    nombre:         context.nombre    ?? "",
+    rubro:          resolveRubroLabel(context),
+    telefono:       context.telefono  ?? "",
+    email:          context.email     ?? "",
+    direccion:      context.direccion ?? "",
+    horarios:       context.horarios  ?? "",
+  };
+}
+
+// ─── WhatsApp URL builder (usado por ContactForm y QuoteModal) ────────────────
 
 export function buildWhatsAppUrl(context: ChatContext): string {
   const { quoteResult, service, quantity } = context;
