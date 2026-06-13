@@ -212,7 +212,7 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
     }
     case "C_NOMBRE":
       return [
-        "Para enviarte la cotización, necesito algunos datos. ¿Cuál es el nombre de tu empresa o negocio?",
+        "Para establecer un contacto con ventas, necesito algunos datos. ¿Cuál es el nombre de tu empresa o negocio?",
       ];
     case "C_RUBRO_NEGOCIO":
       return ["¿A qué rubro pertenece?"];
