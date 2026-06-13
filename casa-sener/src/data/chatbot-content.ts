@@ -43,7 +43,7 @@ export const LOCAL_SUBTYPES: Record<LocalSubtypeKey, RubroContent> = {
       "Si hay campana extractora con ductos: puede exigirse sistema fijo de supresión.",
     ],
     alert: "El polvo ABC no es apto en cocinas. Se necesita Clase K (Acetato de Potasio) o Agua AFFF.",
-    recommendedExtKeyHint: "agua",
+    recommendedExtKeyHint: null,
   },
   musica: {
     label: "Local Comercial música en vivo",
@@ -71,7 +71,7 @@ export const RUBRO_CONTENT: Record<Exclude<RubroKey, "local">, RubroContent> = {
     label: "Cochera",
     infoMessages: [
       "ABC 5 kg cada 200 m².",
-      "Cabina de control / casilla encargado: CO₂ 3,5 kg.",
+      "En la cabina de control o casilla del encargado: CO₂ 3,5 kg.",
     ],
     recommendedExtKeyHint: "abc",
   },
@@ -105,7 +105,7 @@ export const RUBRO_CONTENT: Record<Exclude<RubroKey, "local">, RubroContent> = {
   },
 };
 
-export const COCHERA_QUESTIONS: ConditionalQuestion[] = [
+export const COCHERA_QUESTIONS: Array<ConditionalQuestion & { key: "grande" | "surtidor" }> = [
   {
     key: "grande",
     question: "¿La cochera supera los 600 m² o tiene más de un nivel?",
@@ -118,7 +118,7 @@ export const COCHERA_QUESTIONS: ConditionalQuestion[] = [
   },
 ];
 
-export const DEPOSITO_QUESTIONS: ConditionalQuestion[] = [
+export const DEPOSITO_QUESTIONS: Array<ConditionalQuestion & { key: "inflamables" }> = [
   {
     key: "inflamables",
     question: "¿Almacena materiales inflamables o productos químicos?",
