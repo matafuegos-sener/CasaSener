@@ -43,7 +43,7 @@ export default function Hero() {
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
           <h1
             className="font-bold text-white w-full"
-            style={{ fontSize: 'clamp(2.5rem, 12vw, 3.2rem)', letterSpacing: '-0.03em', lineHeight: 1.08 }}
+            style={{ fontSize: 'clamp(1.75rem, 8vw, 2.4rem)', letterSpacing: '-0.03em', lineHeight: 1.08 }}
           >
             <span className="hero-red-text block">Servicio integral</span>
             <span className="hero-red-text block">de matafuegos</span>
