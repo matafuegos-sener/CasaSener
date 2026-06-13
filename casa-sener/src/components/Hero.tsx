@@ -13,7 +13,7 @@ export default function Hero() {
         src="/hero.jpg"
         alt="Matafuegos en acción"
         fill
-        className="object-cover object-[30%_50%] sm:object-center"
+        className="object-cover object-[5%_65%] sm:object-center"
         priority
         quality={90}
       />
@@ -28,11 +28,11 @@ export default function Hero() {
 
       {/* Contenido centrado — sin hijos absolute para evitar colisiones */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        <p className="text-white/70 font-semibold text-sm sm:text-base uppercase tracking-widest mb-4">
+        <p className="text-white/70 font-semibold text-xs sm:text-base uppercase tracking-widest mb-8 sm:mb-4">
           Matafuegos Sener — Insumos Contra Incendio
         </p>
 
-        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight mb-6">
+        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight mb-8 sm:mb-6">
           <span className="hero-red-text">
             Servicio integral de matafuegos
           </span>
@@ -40,8 +40,8 @@ export default function Hero() {
           y seguridad contra incendios
         </h1>
 
-        <p className="text-lg sm:text-xl text-white/85 max-w-2xl mx-auto mb-10">
-          Recargamos, controlamos y asesoramos.
+        <p className="text-base sm:text-xl text-white/85 max-w-2xl mx-auto mb-12 sm:mb-10">
+          Recargamos, controlamos y asesoramos.{" "}
           <br className="hidden sm:block" />
           Rápido, legal y sin complicaciones.
         </p>
