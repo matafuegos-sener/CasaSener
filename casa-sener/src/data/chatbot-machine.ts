@@ -22,7 +22,6 @@ export type StateKey =
   | "Q_CARGA"
   | "Q_CANTIDAD"
   | "Q_RESULTADO"
-  | "Q_CONFIRMAR"
   | "R_RUBRO"
   | "R_LOCAL_SUBTIPO"
   | "R_COCHERA_GRANDE"
@@ -77,6 +76,18 @@ export type ChatState = {
   history: ChatMessage[];
 };
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const INICIO_GREETING =
+  "¡Hola! Soy el asistente de Matafuegos Sener. ¿En qué te puedo ayudar?";
+
+// Fix #5: derive C_RUBRO_NEGOCIO options from the source of truth so labels
+// stay in sync with RUBRO_CONTENT (e.g. "Edificio PH" not "Edificio").
+const CONTACT_RUBRO_OPTIONS: ButtonOption[] = [
+  { label: "Local Comercial", value: "Local Comercial" },
+  ...Object.values(RUBRO_CONTENT).map((c) => ({ label: c.label, value: c.label })),
+];
+
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
 function getRubroContent(context: ChatContext): RubroContent {
@@ -89,8 +100,23 @@ function getServiceLabel(service: ServiceType): string {
   return service === "recarga" ? "Recarga" : "Venta nueva";
 }
 
+// Fix #1: single safe resolution point — avoids scattered non-null assertions.
+type CapacityOption = (typeof PRICE_CONFIG)[ExtinguisherKey]["capacities"][number];
+
+function resolveCapacity(context: ChatContext): CapacityOption | undefined {
+  if (!context.extKey || context.capacityIndex === undefined) return undefined;
+  return PRICE_CONFIG[context.extKey].capacities[context.capacityIndex];
+}
+
+// Fix #4: derive the rubro label from structured data when available.
+function resolveRubroLabel(context: ChatContext): string {
+  if (context.localSubtype) return LOCAL_SUBTYPES[context.localSubtype].label;
+  if (context.rubroKey) return RUBRO_CONTENT[context.rubroKey].label;
+  return context.contactRubro ?? "-";
+}
+
 function buildQuoteResultMessages(context: ChatContext): string[] {
-  const { quoteResult, quantity, extKey, capacityIndex } = context;
+  const { quoteResult, quantity } = context;
   if (!quoteResult || quoteResult.type === "empty") return ["No se pudo calcular la cotización."];
 
   if (quoteResult.type === "consultar") {
@@ -100,32 +126,45 @@ function buildQuoteResultMessages(context: ChatContext): string[] {
     ];
   }
 
-  const cap = PRICE_CONFIG[extKey!].capacities[capacityIndex!];
+  // Fix #1: guard against missing context instead of crashing with !
+  const cap = resolveCapacity(context);
+  if (!cap || !context.extKey) {
+    return [
+      "Esta combinación requiere cotización especial.",
+      "Te contactamos a la brevedad con el precio.",
+    ];
+  }
+
   const { total, discountPct } = quoteResult;
   const discountText = discountPct > 0 ? ` (descuento ${discountPct}% por volumen)` : "";
   return [
     "Cotización estimada:",
-    `💡 ${quantity}x ${PRICE_CONFIG[extKey!].label} ${cap.label} — Total: $${total.toLocaleString("es-AR")}${discountText}`,
+    `💡 ${quantity}x ${PRICE_CONFIG[context.extKey].label} ${cap.label} — Total: $${total.toLocaleString("es-AR")}${discountText}`,
   ];
 }
 
 function buildConfirmSummary(context: ChatContext): string[] {
-  const { quoteResult, service, extKey, capacityIndex, quantity } = context;
+  const { quoteResult, service, quantity } = context;
   const lines: string[] = ["Resumen de tu pedido:"];
 
   if (quoteResult?.type === "ok") {
-    const cap = PRICE_CONFIG[extKey!].capacities[capacityIndex!];
-    const { total } = quoteResult;
-    lines.push(
-      `Servicio: ${getServiceLabel(service!)} · ${PRICE_CONFIG[extKey!].label} · ${cap.label} · ${quantity} unidades · $${total.toLocaleString("es-AR")}`
-    );
+    // Fix #1: guard against missing context instead of crashing with !
+    const cap = resolveCapacity(context);
+    if (cap && context.extKey && service) {
+      const { total } = quoteResult;
+      lines.push(
+        `Servicio: ${getServiceLabel(service)} · ${PRICE_CONFIG[context.extKey].label} · ${cap.label} · ${quantity} unidades · $${total.toLocaleString("es-AR")}`
+      );
+    } else {
+      lines.push("Servicio: requiere cotización especial.");
+    }
   } else if (quoteResult?.type === "consultar") {
     lines.push("Servicio: requiere cotización especial.");
   }
 
   lines.push(
     `Nombre: ${context.nombre}`,
-    `Rubro: ${context.contactRubro}`,
+    `Rubro: ${resolveRubroLabel(context)}`,
     `Teléfono: ${context.telefono}`,
     `Email: ${context.email}`,
     `Dirección: ${context.direccion}`,
@@ -138,7 +177,7 @@ function buildConfirmSummary(context: ChatContext): string[] {
 function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
   switch (stateKey) {
     case "INICIO":
-      return ["¡Hola! Soy el asistente de Matafuegos Sener. ¿En qué te puedo ayudar?"];
+      return [INICIO_GREETING]; // Fix #6: use shared constant
     case "Q_SERVICIO":
       return ["¿Qué servicio necesitás?"];
     case "Q_TIPO":
@@ -149,8 +188,6 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
       return ["¿Cuántas unidades?"];
     case "Q_RESULTADO":
       return buildQuoteResultMessages(context);
-    case "Q_CONFIRMAR":
-      return [];
     case "R_RUBRO":
       return ["¿Cuál es el rubro de tu negocio?"];
     case "R_LOCAL_SUBTIPO":
@@ -304,12 +341,8 @@ export function getStateView(state: ChatState): StateView {
       return { inputType: "text", placeholder: "Ej: Restaurante El Buen Sabor" };
 
     case "C_RUBRO_NEGOCIO":
-      return {
-        inputType: "buttons",
-        options: ["Local comercial", "Edificio", "Cochera", "Oficina", "Hotel", "Depósito"].map(
-          (r) => ({ label: r, value: r })
-        ),
-      };
+      // Fix #5: options derived from RUBRO_CONTENT so labels stay in sync
+      return { inputType: "buttons", options: CONTACT_RUBRO_OPTIONS };
 
     case "C_TELEFONO":
       return { inputType: "text", placeholder: "Ej: 11 5318-0515" };
@@ -332,7 +365,6 @@ export function getStateView(state: ChatState): StateView {
         ],
       };
 
-    case "Q_CONFIRMAR":
     case "FIN":
     case "FIN_INFO":
       return { inputType: "none" };
@@ -383,7 +415,20 @@ export function transition(state: ChatState, userInput: string): ChatState {
 
     case "Q_CANTIDAD": {
       const qty = parseInt(userInput, 10);
-      newContext.quantity = qty >= 1 ? qty : 1;
+
+      // Fix #2: reject NaN / zero instead of silently clamping to 1
+      if (isNaN(qty) || qty < 1) {
+        const botHistory: ChatMessage[] = [
+          { role: "bot", text: "Por favor ingresá una cantidad válida (número mayor a 0)." },
+        ];
+        return {
+          stateKey: "Q_CANTIDAD",
+          context: newContext,
+          history: [...newHistory, ...botHistory],
+        };
+      }
+
+      newContext.quantity = qty;
       newContext.quoteResult = calculateQuote(
         newContext.service!,
         newContext.extKey!,
@@ -529,7 +574,6 @@ export function transition(state: ChatState, userInput: string): ChatState {
       break;
 
     // Terminal states — no further transitions expected
-    case "Q_CONFIRMAR":
     case "FIN":
     case "FIN_INFO":
       newStateKey = stateKey;
@@ -554,7 +598,7 @@ export const initialState: ChatState = {
   history: [
     {
       role: "bot",
-      text: "¡Hola! Soy el asistente de Matafuegos Sener. ¿En qué te puedo ayudar?",
+      text: INICIO_GREETING, // Fix #6: use shared constant
     },
   ],
 };
@@ -562,16 +606,21 @@ export const initialState: ChatState = {
 // ─── WhatsApp URL builder ────────────────────────────────────────────────────
 
 export function buildWhatsAppUrl(context: ChatContext): string {
-  const { quoteResult, service, extKey, capacityIndex, quantity } = context;
+  const { quoteResult, service, quantity } = context;
 
   let quoteLines: string;
   if (quoteResult?.type === "ok") {
-    const cap = PRICE_CONFIG[extKey!].capacities[capacityIndex!];
-    const { total, discountPct } = quoteResult;
-    const discountText = discountPct > 0 ? ` (−${discountPct}% volumen)` : "";
-    quoteLines =
-      `Consulta: ${getServiceLabel(service!)} · ${PRICE_CONFIG[extKey!].label} · ${cap.label} · ${quantity} unidades\n` +
-      `Total estimado: $${total.toLocaleString("es-AR")}${discountText}`;
+    // Fix #1: use resolveCapacity instead of crashing non-null assertions
+    const cap = resolveCapacity(context);
+    if (cap && context.extKey && service) {
+      const { total, discountPct } = quoteResult;
+      const discountText = discountPct > 0 ? ` (−${discountPct}% volumen)` : "";
+      quoteLines =
+        `Consulta: ${getServiceLabel(service)} · ${PRICE_CONFIG[context.extKey].label} · ${cap.label} · ${quantity} unidades\n` +
+        `Total estimado: $${total.toLocaleString("es-AR")}${discountText}`;
+    } else {
+      quoteLines = "Consulta: requiere cotización especial.";
+    }
   } else if (quoteResult?.type === "consultar") {
     quoteLines = "Consulta: requiere cotización especial.";
   } else {
@@ -584,7 +633,7 @@ export function buildWhatsAppUrl(context: ChatContext): string {
     quoteLines,
     "",
     `Nombre: ${context.nombre || "-"}`,
-    `Rubro: ${context.contactRubro || "-"}`,
+    `Rubro: ${resolveRubroLabel(context)}`, // Fix #4: derive label from structured data
     `Teléfono: ${context.telefono || "-"}`,
     `Email: ${context.email || "-"}`,
     `Dirección: ${context.direccion || "-"}`,
