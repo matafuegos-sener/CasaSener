@@ -93,15 +93,33 @@ export default function ChatBot() {
   return (
     <>
       {/* Floating trigger button */}
+      {/* Mobile: burbuja circular — borde blanco, ícono rojo */}
       <button
         onClick={isOpen ? handleClose : handleOpen}
-        className="fixed right-4 sm:right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
+        className="sm:hidden fixed right-4 z-[100] w-14 h-14 rounded-full flex items-center justify-center border-2 border-white shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+        style={{
+          bottom: "max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))",
+          backgroundColor: isOpen ? "var(--color-brand-red)" : "rgba(15,15,15,0.55)",
+          backdropFilter: "blur(8px)",
+        }}
+        aria-label={isOpen ? "Cerrar asistente" : "Hacé tu consulta"}
+      >
+        {isOpen
+          ? <X className="w-5 h-5 text-white" aria-hidden="true" />
+          : <MessageCircle className="w-5 h-5" style={{ color: "var(--color-brand-red)" }} aria-hidden="true" />
+        }
+      </button>
+
+      {/* Desktop: pill con texto — sin cambios */}
+      <button
+        onClick={isOpen ? handleClose : handleOpen}
+        className="hidden sm:flex fixed right-6 z-[100] items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
         style={{
           backgroundColor: "var(--color-brand-red)",
           color: "white",
-          bottom: "max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))",
+          bottom: "1.5rem",
         }}
-        aria-label={isOpen ? "Cerrar asistente" : "Hacer tu consulta"}
+        aria-label={isOpen ? "Cerrar asistente" : "Hacé tu consulta"}
       >
         {isOpen ? (
           <X className="w-4 h-4 shrink-0" aria-hidden="true" />
