@@ -227,9 +227,7 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
     case "C_CONFIRMAR":
       return buildConfirmSummary(context);
     case "FIN":
-      return [
-        "¡Perfecto! Un agente de Matafuegos Sener se comunicará con vos dentro de las próximas 24 hs.",
-      ];
+      return ["Un agente se comunicará con vos dentro de las próximas 24 hs."];
     case "FIN_INFO":
       return [
         "¡Perfecto! Si en algún momento necesitás una cotización, volvé cuando quieras.",
@@ -361,7 +359,7 @@ export function getStateView(state: ChatState): StateView {
       return {
         inputType: "buttons",
         options: [
-          { label: "Enviar por WhatsApp", value: "enviar" },
+          { label: "Confirmar", value: "enviar" },
           { label: "Corregir algo", value: "corregir" },
         ],
       };

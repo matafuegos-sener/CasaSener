@@ -14,7 +14,6 @@ export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<ChatState>(initialState);
   const [textInput, setTextInput] = useState("");
-  const [whatsAppOpened, setWhatsAppOpened] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -27,6 +26,20 @@ export default function ChatBot() {
     inputRef.current?.focus();
   }, [isOpen, state.stateKey]);
 
+  useEffect(() => {
+    if (state.stateKey === "FIN") {
+      window.open(buildWhatsAppUrl(state.context), "_blank");
+    }
+    // state.context is stable when stateKey becomes "FIN" — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.stateKey]);
+
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener("sener:open-chat", handler);
+    return () => window.removeEventListener("sener:open-chat", handler);
+  }, []);
+
   function handleOpen() {
     setIsOpen(true);
   }
@@ -35,7 +48,6 @@ export default function ChatBot() {
     setIsOpen(false);
     setState(initialState);
     setTextInput("");
-    setWhatsAppOpened(false);
   }
 
   function handleOption(value: string) {
@@ -52,15 +64,9 @@ export default function ChatBot() {
     if (e.key === "Enter") handleTextSubmit();
   }
 
-  function handleWhatsApp() {
-    window.open(buildWhatsAppUrl(state.context), "_blank");
-    setWhatsAppOpened(true);
-  }
-
   function handleReset() {
     setState(initialState);
     setTextInput("");
-    setWhatsAppOpened(false);
   }
 
   const view = getStateView(state);
@@ -71,14 +77,17 @@ export default function ChatBot() {
       {/* Floating trigger button */}
       <button
         onClick={isOpen ? handleClose : handleOpen}
-        className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
+        className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand-red)]"
         style={{ backgroundColor: "var(--color-brand-red)", color: "white" }}
-        aria-label={isOpen ? "Cerrar asistente" : "Abrir asistente"}
+        aria-label={isOpen ? "Cerrar asistente" : "Hacer tu consulta"}
       >
         {isOpen ? (
-          <X className="w-5 h-5" aria-hidden="true" />
+          <X className="w-4 h-4 shrink-0" aria-hidden="true" />
         ) : (
-          <MessageCircle className="w-5 h-5" aria-hidden="true" />
+          <>
+            <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="text-sm font-semibold whitespace-nowrap">Hacé tu consulta</span>
+          </>
         )}
       </button>
 
@@ -187,27 +196,16 @@ export default function ChatBot() {
             )}
 
             {view.inputType === "none" && stateKey === "FIN" && (
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleWhatsApp}
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)]"
-                  style={{ backgroundColor: "var(--color-brand-red)" }}
-                >
-                  Abrir WhatsApp
-                </button>
-                {whatsAppOpened && (
-                  <button
-                    onClick={handleReset}
-                    className="w-full py-2 rounded-lg text-sm border transition-colors duration-150 focus:outline-none"
-                    style={{
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-brand-gray)",
-                    }}
-                  >
-                    Hacer otra consulta
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={handleReset}
+                className="w-full py-2 rounded-lg text-sm border transition-colors duration-150 focus:outline-none"
+                style={{
+                  borderColor: "var(--color-border)",
+                  color: "var(--color-brand-gray)",
+                }}
+              >
+                Hacer otra consulta
+              </button>
             )}
 
             {view.inputType === "none" && stateKey === "FIN_INFO" && (
