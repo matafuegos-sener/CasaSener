@@ -81,12 +81,12 @@ export default function Contact() {
             <span>Barrio Flores, Ciudad Autónoma de Buenos Aires</span>
           </div>
           <div className="hidden sm:flex items-center gap-3">
-            <div className="opacity-40 rounded overflow-hidden" role="img" aria-label={`Código QR para ${SITE_URL}`}>
-              <QRCodeSVG value={SITE_URL} size={52} bgColor="transparent" fgColor="#ffffff" />
+            <div className="rounded-lg overflow-hidden p-1.5 bg-white" role="img" aria-label={`Código QR para ${SITE_URL}`}>
+              <QRCodeSVG value={SITE_URL} size={80} bgColor="#ffffff" fgColor="#1a1a1a" />
             </div>
             <div>
-              <p className="text-white/40 text-xs font-semibold">Escaneá para compartir</p>
-              <p className="text-white/25 text-xs font-mono mt-0.5">casa-sener.vercel.app</p>
+              <p className="text-white/60 text-xs font-semibold">Escaneá para compartir</p>
+              <p className="text-white/40 text-xs font-mono mt-0.5">casa-sener.vercel.app</p>
             </div>
           </div>
         </div>
