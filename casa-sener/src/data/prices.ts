@@ -35,10 +35,9 @@ export const PRICE_CONFIG: Record<ExtinguisherKey, ExtinguisherConfig> = {
   hcfc: {
     label: "HCFC 123",
     capacities: [
-      { label: "1 lt",   recarga: 40008, venta: null   },
-      { label: "3,5 lt", recarga: 45881, venta: null   },
-      { label: "6 lt",   recarga: 47717, venta: 585700 },
-      { label: "10 lt",  recarga: null,  venta: null   },
+      { label: "3 kg",  recarga: 37000, venta: null },
+      { label: "5 kg",  recarga: 41000, venta: null },
+      { label: "10 kg", recarga: 52000, venta: null },
     ],
   },
   agua: {
