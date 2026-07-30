@@ -16,35 +16,36 @@ export const PRICE_CONFIG: Record<ExtinguisherKey, ExtinguisherConfig> = {
   abc: {
     label: "Polvo Químico Seco ABC",
     capacities: [
-      { label: "1 kg",           recarga: 14000, venta: 21900  },
-      { label: "2,5 kg",         recarga: 26000, venta: 55100  },
-      { label: "5 kg",           recarga: 30000, venta: 78700  },
-      { label: "10 kg",          recarga: 38000, venta: 135500 },
-      { label: "25 kg (rodante)", recarga: 70000, venta: 504200 },
+      { label: "1 kg",           recarga: 22757, venta: 21900  },
+      { label: "2,5 kg",         recarga: 27529, venta: null   },
+      { label: "5 kg",           recarga: 36705, venta: 112500 },
+      { label: "10 kg",          recarga: 49552, venta: null   },
+      { label: "25 kg (rodante)", recarga: 165173, venta: null },
     ],
   },
   co2: {
     label: "Dióxido de Carbono (CO₂)",
     capacities: [
-      { label: "1 kg",   recarga: null,  venta: 145400 },
-      { label: "3,5 kg", recarga: 31000, venta: 452000 },
-      { label: "5 kg",   recarga: 35000, venta: 585700 },
-      { label: "10 kg",  recarga: 53000, venta: 972100 },
+      { label: "1 kg",   recarga: null,  venta: null   },
+      { label: "3,5 kg", recarga: 40376, venta: 452000 },
+      { label: "5 kg",   recarga: 42578, venta: 585700 },
+      { label: "10 kg",  recarga: null,  venta: null   },
     ],
   },
   hcfc: {
     label: "HCFC 123",
     capacities: [
-      { label: "3 kg",  recarga: 37000, venta: null },
-      { label: "5 kg",  recarga: 41000, venta: null },
-      { label: "10 kg", recarga: 52000, venta: null },
+      { label: "1 lt",   recarga: 40008, venta: null   },
+      { label: "3,5 lt", recarga: 45881, venta: null   },
+      { label: "6 lt",   recarga: 47717, venta: 585700 },
+      { label: "10 lt",  recarga: null,  venta: null   },
     ],
   },
   agua: {
     label: "Agua / AFFF",
     capacities: [
-      { label: "Agua BP — 10 lt",  recarga: 28000, venta: null },
-      { label: "Agua AFFF — 6 lt", recarga: 14500, venta: null },
+      { label: "Agua BP — 10 lt",  recarga: 36705, venta: null },
+      { label: "Agua AFFF — 6 lt", recarga: 47717, venta: null },
     ],
   },
 };
