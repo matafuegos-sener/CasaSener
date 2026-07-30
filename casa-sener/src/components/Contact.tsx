@@ -2,7 +2,7 @@
 
 import { Phone, Mail, MapPin } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { useWhatsAppUrl } from "@/lib/whatsapp";
 
 const SITE_URL = "https://casa-sener.vercel.app";
 
@@ -16,7 +16,7 @@ const cardClass =
   "flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-200 group";
 
 export default function Contact() {
-  const waUrl = buildWhatsAppUrl();
+  const waUrl = useWhatsAppUrl();
 
   return (
     <section

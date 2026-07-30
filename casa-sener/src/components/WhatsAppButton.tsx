@@ -1,9 +1,9 @@
 "use client";
 
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { useWhatsAppUrl } from "@/lib/whatsapp";
 
 export default function WhatsAppButton() {
-  const waUrl = buildWhatsAppUrl();
+  const waUrl = useWhatsAppUrl();
 
   return (
     <a
