@@ -9,15 +9,26 @@ import {
   buildQuotePayload,
 } from "@/data/chatbot-machine";
 import type { ChatState } from "@/data/chatbot-machine";
+import { DEFAULT_PRICE_CONFIG, PriceConfig } from "@/data/prices";
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<ChatState>(initialState);
+  const [priceConfig, setPriceConfig] = useState<PriceConfig>(DEFAULT_PRICE_CONFIG);
   const [textInput, setTextInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/prices")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: PriceConfig | null) => {
+        if (data) setPriceConfig(data);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,10 +63,10 @@ export default function ChatBot() {
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildQuotePayload(state.context)),
+        body: JSON.stringify(buildQuotePayload(state.context, priceConfig)),
       });
       if (!res.ok) throw new Error("error");
-      setState((prev) => transition(prev, "enviar"));
+      setState((prev) => transition(prev, "enviar", priceConfig));
     } catch {
       setSubmitError(true);
     } finally {
@@ -68,12 +79,12 @@ export default function ChatBot() {
       handleConfirm();
       return;
     }
-    setState((prev) => transition(prev, value));
+    setState((prev) => transition(prev, value, priceConfig));
   }
 
   function handleTextSubmit() {
     if (!textInput.trim()) return;
-    setState((prev) => transition(prev, textInput.trim()));
+    setState((prev) => transition(prev, textInput.trim(), priceConfig));
     setTextInput("");
   }
 
@@ -87,7 +98,7 @@ export default function ChatBot() {
     setSubmitError(false);
   }
 
-  const view = getStateView(state);
+  const view = getStateView(state, priceConfig);
   const { stateKey } = state;
 
   return (

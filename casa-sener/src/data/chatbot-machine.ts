@@ -2,7 +2,7 @@ import {
   type ServiceType,
   type ExtinguisherKey,
   type QuoteResult,
-  PRICE_CONFIG,
+  type PriceConfig,
   calculateQuote,
 } from "./prices";
 import {
@@ -101,11 +101,11 @@ function getServiceLabel(service: ServiceType): string {
 }
 
 // Fix #1: single safe resolution point — avoids scattered non-null assertions.
-type CapacityOption = (typeof PRICE_CONFIG)[ExtinguisherKey]["capacities"][number];
+type CapacityOption = PriceConfig[ExtinguisherKey]["capacities"][number];
 
-function resolveCapacity(context: ChatContext): CapacityOption | undefined {
+function resolveCapacity(context: ChatContext, config: PriceConfig): CapacityOption | undefined {
   if (!context.extKey || context.capacityIndex === undefined) return undefined;
-  return PRICE_CONFIG[context.extKey].capacities[context.capacityIndex];
+  return config[context.extKey].capacities[context.capacityIndex];
 }
 
 // Fix #4: derive the rubro label from structured data when available.
@@ -115,7 +115,7 @@ function resolveRubroLabel(context: ChatContext): string {
   return context.contactRubro ?? "-";
 }
 
-function buildQuoteResultMessages(context: ChatContext): string[] {
+function buildQuoteResultMessages(context: ChatContext, config: PriceConfig): string[] {
   const { quoteResult, quantity } = context;
   if (!quoteResult || quoteResult.type === "empty") return ["No se pudo calcular la cotización."];
 
@@ -127,7 +127,7 @@ function buildQuoteResultMessages(context: ChatContext): string[] {
   }
 
   // Fix #1: guard against missing context instead of crashing with !
-  const cap = resolveCapacity(context);
+  const cap = resolveCapacity(context, config);
   if (!cap || !context.extKey) {
     return [
       "Esta combinación requiere cotización especial.",
@@ -139,21 +139,21 @@ function buildQuoteResultMessages(context: ChatContext): string[] {
   const discountText = discountPct > 0 ? ` (descuento ${discountPct}% por volumen)` : "";
   return [
     "Cotización estimada:",
-    `💡 ${quantity}x ${PRICE_CONFIG[context.extKey].label} ${cap.label} — Total: $${total.toLocaleString("es-AR")}${discountText}`,
+    `💡 ${quantity}x ${config[context.extKey].label} ${cap.label} — Total: $${total.toLocaleString("es-AR")}${discountText}`,
   ];
 }
 
-function buildConfirmSummary(context: ChatContext): string[] {
+function buildConfirmSummary(context: ChatContext, config: PriceConfig): string[] {
   const { quoteResult, service, quantity } = context;
   const lines: string[] = ["Resumen de tu pedido:"];
 
   if (quoteResult?.type === "ok") {
     // Fix #1: guard against missing context instead of crashing with !
-    const cap = resolveCapacity(context);
+    const cap = resolveCapacity(context, config);
     if (cap && context.extKey && service) {
       const { total } = quoteResult;
       lines.push(
-        `Servicio: ${getServiceLabel(service)} · ${PRICE_CONFIG[context.extKey].label} · ${cap.label} · ${quantity} unidades · $${total.toLocaleString("es-AR")}`
+        `Servicio: ${getServiceLabel(service)} · ${config[context.extKey].label} · ${cap.label} · ${quantity} unidades · $${total.toLocaleString("es-AR")}`
       );
     } else {
       lines.push("Servicio: requiere cotización especial.");
@@ -174,7 +174,7 @@ function buildConfirmSummary(context: ChatContext): string[] {
   return lines;
 }
 
-function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
+function getBotMessages(stateKey: StateKey, context: ChatContext, config: PriceConfig): string[] {
   switch (stateKey) {
     case "INICIO":
       return [INICIO_GREETING]; // Fix #6: use shared constant
@@ -184,12 +184,12 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
       return ["¿Qué tipo de matafuego?"];
     case "Q_CARGA":
       return context.extKey
-        ? [`¿Qué carga de ${PRICE_CONFIG[context.extKey].label} necesitás?`]
+        ? [`¿Qué carga de ${config[context.extKey].label} necesitás?`]
         : ["¿Qué carga necesitás?"];
     case "Q_CANTIDAD":
       return ["¿Cuántas unidades?"];
     case "Q_RESULTADO":
-      return buildQuoteResultMessages(context);
+      return buildQuoteResultMessages(context, config);
     case "R_RUBRO":
       return ["¿Cuál es el rubro de tu negocio?"];
     case "R_LOCAL_SUBTIPO":
@@ -225,7 +225,7 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
     case "C_HORARIOS":
       return ["¿En qué horarios podemos contactarte o pasar a retirar los matafuegos?"];
     case "C_CONFIRMAR":
-      return buildConfirmSummary(context);
+      return buildConfirmSummary(context, config);
     case "FIN":
       return ["Un agente se comunicará con vos dentro de las próximas 24 hs."];
     case "FIN_INFO":
@@ -238,7 +238,7 @@ function getBotMessages(stateKey: StateKey, context: ChatContext): string[] {
 
 // ─── State view ──────────────────────────────────────────────────────────────
 
-export function getStateView(state: ChatState): StateView {
+export function getStateView(state: ChatState, config: PriceConfig): StateView {
   const { stateKey, context } = state;
 
   switch (stateKey) {
@@ -263,15 +263,18 @@ export function getStateView(state: ChatState): StateView {
     case "Q_TIPO":
       return {
         inputType: "buttons",
-        options: (Object.entries(PRICE_CONFIG) as [ExtinguisherKey, typeof PRICE_CONFIG[ExtinguisherKey]][]).map(
-          ([key, cfg]) => ({ label: cfg.label, value: key })
-        ),
+        options: (Object.entries(config) as [ExtinguisherKey, PriceConfig[ExtinguisherKey]][])
+          .filter(([, cfg]) => cfg.capacities.some((cap) => cap.activo))
+          .map(([key, cfg]) => ({ label: cfg.label, value: key })),
       };
 
     case "Q_CARGA": {
-      const cfg = PRICE_CONFIG[context.extKey!];
+      const cfg = config[context.extKey!];
       const service = context.service!;
-      const allOptions = cfg.capacities.map((cap, idx) => ({
+      const activeOnly = cfg.capacities
+        .map((cap, idx) => ({ cap, idx }))
+        .filter(({ cap }) => cap.activo);
+      const allOptions = activeOnly.map(({ cap, idx }) => ({
         label: cap.label,
         value: String(idx),
         available: cap[service] !== null,
@@ -372,11 +375,11 @@ export function getStateView(state: ChatState): StateView {
 
 // ─── Transition ──────────────────────────────────────────────────────────────
 
-export function transition(state: ChatState, userInput: string): ChatState {
+export function transition(state: ChatState, userInput: string, config: PriceConfig): ChatState {
   const { stateKey, context, history } = state;
 
   // Resolve the display label for button inputs
-  const view = getStateView(state);
+  const view = getStateView(state, config);
   let displayText = userInput;
   if (view.options) {
     const match = view.options.find((o) => o.value === userInput);
@@ -429,6 +432,7 @@ export function transition(state: ChatState, userInput: string): ChatState {
 
       newContext.quantity = qty;
       newContext.quoteResult = calculateQuote(
+        config,
         newContext.service!,
         newContext.extKey!,
         newContext.capacityIndex!,
@@ -579,7 +583,7 @@ export function transition(state: ChatState, userInput: string): ChatState {
       break;
   }
 
-  const botMessages = getBotMessages(newStateKey, newContext);
+  const botMessages = getBotMessages(newStateKey, newContext, config);
   const botHistory: ChatMessage[] = botMessages.map((text) => ({ role: "bot", text }));
 
   return {
@@ -604,12 +608,12 @@ export const initialState: ChatState = {
 
 // ─── Quote payload builder (para POST a /api/quote) ─────────────────────────
 
-export function buildQuotePayload(context: ChatContext) {
+export function buildQuotePayload(context: ChatContext, config: PriceConfig) {
   const { service, extKey, quantity, quoteResult } = context;
-  const cap = resolveCapacity(context);
+  const cap = resolveCapacity(context, config);
   return {
     serviceLabel:   service ? getServiceLabel(service) : "—",
-    extLabel:       extKey ? PRICE_CONFIG[extKey].label : "—",
+    extLabel:       extKey ? config[extKey].label : "—",
     capacityLabel:  cap?.label ?? "—",
     quantity:       quantity ?? 0,
     unitPrice:      quoteResult?.type === "ok" ? quoteResult.unitPrice : null,
@@ -626,18 +630,18 @@ export function buildQuotePayload(context: ChatContext) {
 
 // ─── WhatsApp URL builder (usado por ContactForm y QuoteModal) ────────────────
 
-export function buildWhatsAppUrl(context: ChatContext): string {
+export function buildWhatsAppUrl(context: ChatContext, config: PriceConfig): string {
   const { quoteResult, service, quantity } = context;
 
   let quoteLines: string;
   if (quoteResult?.type === "ok") {
     // Fix #1: use resolveCapacity instead of crashing non-null assertions
-    const cap = resolveCapacity(context);
+    const cap = resolveCapacity(context, config);
     if (cap && context.extKey && service) {
       const { total, discountPct } = quoteResult;
       const discountText = discountPct > 0 ? ` (−${discountPct}% volumen)` : "";
       quoteLines =
-        `Consulta: ${getServiceLabel(service)} · ${PRICE_CONFIG[context.extKey].label} · ${cap.label} · ${quantity} unidades\n` +
+        `Consulta: ${getServiceLabel(service)} · ${config[context.extKey].label} · ${cap.label} · ${quantity} unidades\n` +
         `Total estimado: $${total.toLocaleString("es-AR")}${discountText}`;
     } else {
       quoteLines = "Consulta: requiere cotización especial.";

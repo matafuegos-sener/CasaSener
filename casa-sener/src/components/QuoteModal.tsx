@@ -5,11 +5,40 @@ import { createPortal } from "react-dom";
 import { X, Calculator, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import {
-  PRICE_CONFIG,
+  DEFAULT_PRICE_CONFIG,
   calculateQuote,
   ExtinguisherKey,
+  PriceConfig,
   ServiceType,
 } from "@/data/prices";
+import { useWhatsAppUrl } from "@/lib/whatsapp";
+
+function isValidPhone(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (!/^[\d\s()+-]+$/.test(trimmed)) return false;
+  return trimmed.replace(/\D/g, "").length >= 8;
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function joinWithY(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}`;
+}
+
+function visibleExtKeys(config: PriceConfig): ExtinguisherKey[] {
+  return (Object.keys(config) as ExtinguisherKey[]).filter((key) =>
+    config[key].capacities.some((cap) => cap.activo)
+  );
+}
+
+function firstActiveCapacityIndex(config: PriceConfig, extKey: ExtinguisherKey): number {
+  const index = config[extKey].capacities.findIndex((cap) => cap.activo);
+  return index === -1 ? 0 : index;
+}
 
 interface Props {
   variant?: "hero" | "navbar";
@@ -34,10 +63,27 @@ export default function QuoteModal({ variant = "hero" }: Props) {
   const [showValidation, setShowValidation] = useState(false);
 
   // Quote state
+  const [config, setConfig] = useState<PriceConfig>(DEFAULT_PRICE_CONFIG);
   const [service, setService] = useState<ServiceType>("recarga");
   const [extKey, setExtKey] = useState<ExtinguisherKey>("abc");
   const [capacityIndex, setCapacityIndex] = useState(0);
   const [quantityStr, setQuantityStr] = useState("1");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/prices")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: PriceConfig | null) => {
+        if (!cancelled && data) setConfig(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const extKeys = visibleExtKeys(config);
+  const effectiveExtKey = extKeys.includes(extKey) ? extKey : (extKeys[0] ?? extKey);
 
   // Contact state
   const [nombre, setNombre] = useState("");
@@ -47,9 +93,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
   const [direccion, setDireccion] = useState("");
   const [horarios, setHorarios] = useState("9 a 18");
 
-  useEffect(() => {
-    setCapacityIndex(0);
-  }, [extKey]);
+  const waUrl = useWhatsAppUrl();
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -79,19 +123,36 @@ export default function QuoteModal({ variant = "hero" }: Props) {
     };
   }, [isOpen, handleKeyDown]);
 
-  const config = PRICE_CONFIG[extKey];
+  const extConfig = config[effectiveExtKey];
+  const activeCapacities = extConfig.capacities
+    .map((cap, i) => ({ cap, i }))
+    .filter(({ cap }) => cap.activo);
+  const effectiveCapacityIndex = activeCapacities.some(({ i }) => i === capacityIndex)
+    ? capacityIndex
+    : (activeCapacities[0]?.i ?? 0);
   const quantity = Math.max(1, parseInt(quantityStr) || 1);
-  const result = calculateQuote(service, extKey, capacityIndex, quantity);
+  const result = calculateQuote(config, service, effectiveExtKey, effectiveCapacityIndex, quantity);
 
   function buildSummary(): string {
     const serviceLabel = service === "recarga" ? "Recarga" : "Venta nueva";
-    const cap = config.capacities[capacityIndex];
+    const cap = extConfig.capacities[effectiveCapacityIndex];
     const units = quantity === 1 ? "matafuego" : "matafuegos";
-    return `${serviceLabel} · ${quantity} ${units} · ${config.label} · ${cap?.label ?? ""}`;
+    return `${serviceLabel} · ${quantity} ${units} · ${extConfig.label} · ${cap?.label ?? ""}`;
   }
 
-  const requiredMissing =
-    !nombre.trim() || !telefono.trim() || !rubro;
+  const phoneMissing = !telefono.trim();
+  const phoneInvalid = !phoneMissing && !isValidPhone(telefono);
+  const emailInvalid = email.trim() !== "" && !isValidEmail(email);
+
+  const validationMessage = joinWithY(
+    [
+      !nombre.trim() ? "el nombre de la empresa" : null,
+      phoneMissing ? "el teléfono" : phoneInvalid ? "un teléfono válido" : null,
+      emailInvalid ? "un email válido" : null,
+    ].filter((part): part is string => part !== null)
+  );
+
+  const requiredMissing = !nombre.trim() || phoneMissing || phoneInvalid || emailInvalid;
 
   async function handleSubmit() {
     if (requiredMissing) {
@@ -102,13 +163,13 @@ export default function QuoteModal({ variant = "hero" }: Props) {
     setSubmitError("");
     try {
       const serviceLabel = service === "recarga" ? "Recarga" : "Venta nueva";
-      const cap = config.capacities[capacityIndex];
+      const cap = extConfig.capacities[effectiveCapacityIndex];
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           serviceLabel,
-          extLabel: config.label,
+          extLabel: extConfig.label,
           capacityLabel: cap?.label ?? "",
           quantity,
           unitPrice: result.type === "ok" ? result.unitPrice : null,
@@ -174,7 +235,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
             <div className="flex min-h-full items-center justify-center px-4 py-8 sm:py-20">
               <div className="relative bg-[var(--color-surface)] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-4">
 
-                {step === "quote" ? (
+                {step === "quote" && (
                   <>
                     {/* Header — logo izq (desktop), título centrado, X der */}
                     <div className="relative flex items-center px-6 py-4 border-b border-[var(--color-border)]">
@@ -231,12 +292,16 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                         <label htmlFor="quote-type" className={labelClass}>Tipo</label>
                         <select
                           id="quote-type"
-                          value={extKey}
-                          onChange={(e) => setExtKey(e.target.value as ExtinguisherKey)}
+                          value={effectiveExtKey}
+                          onChange={(e) => {
+                            const newKey = e.target.value as ExtinguisherKey;
+                            setExtKey(newKey);
+                            setCapacityIndex(firstActiveCapacityIndex(config, newKey));
+                          }}
                           className={inputClass}
                         >
-                          {Object.entries(PRICE_CONFIG).map(([key, cfg]) => (
-                            <option key={key} value={key}>{cfg.label}</option>
+                          {extKeys.map((key) => (
+                            <option key={key} value={key}>{config[key].label}</option>
                           ))}
                         </select>
                       </div>
@@ -246,11 +311,11 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                         <label htmlFor="quote-capacity" className={labelClass}>Carga</label>
                         <select
                           id="quote-capacity"
-                          value={capacityIndex}
+                          value={effectiveCapacityIndex}
                           onChange={(e) => setCapacityIndex(Number(e.target.value))}
                           className={inputClass}
                         >
-                          {config.capacities.map((cap, i) => (
+                          {activeCapacities.map(({ cap, i }) => (
                             <option key={i} value={i}>
                               {cap.label}{cap[service] === null ? " — Consultar" : ""}
                             </option>
@@ -319,7 +384,9 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                       </button>
                     </div>
                   </>
-                ) : (
+                )}
+
+                {step === "contact" && (
                   <>
                     {/* Header contacto — flecha izq, título centrado, X der */}
                     <div className="relative flex items-center px-6 py-4 border-b border-[var(--color-border)]">
@@ -412,7 +479,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                             type="tel"
                             value={telefono}
                             onChange={(e) => { setTelefono(e.target.value); setShowValidation(false); }}
-                            className={`w-full border rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent ${showValidation && !telefono.trim() ? "border-red-400 bg-red-50" : "border-[var(--color-border)]"}`}
+                            className={`w-full border rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent ${showValidation && (phoneMissing || phoneInvalid) ? "border-red-400 bg-red-50" : "border-[var(--color-border)]"}`}
                             placeholder="Ej: 11 5318-0515"
                           />
                         </div>
@@ -447,8 +514,8 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                             id="contact-email"
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent"
+                            onChange={(e) => { setEmail(e.target.value); setShowValidation(false); }}
+                            className={`w-full border rounded-lg px-3 py-2.5 text-sm text-[var(--color-brand-dark)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-red)] focus:border-transparent ${showValidation && emailInvalid ? "border-red-400 bg-red-50" : "border-[var(--color-border)]"}`}
                             placeholder="Ej: contacto@empresa.com"
                           />
                         </div>
@@ -473,7 +540,7 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                       {/* Errores */}
                       {showValidation && requiredMissing && (
                         <p className="text-xs text-red-600 text-center">
-                          Completá nombre empresa y teléfono para continuar.
+                          Completá {validationMessage} para continuar.
                         </p>
                       )}
                       {submitError && (
@@ -489,6 +556,23 @@ export default function QuoteModal({ variant = "hero" }: Props) {
                       >
                         {isSubmitting ? "Enviando…" : "Realizar pedido"}
                       </button>
+
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-brand-red)] transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4 shrink-0 text-[#25D366]"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                        Por cualquier consulta sobre productos y servicios podés hablarnos aquí
+                      </a>
                     </div>
                   </>
                 )}
