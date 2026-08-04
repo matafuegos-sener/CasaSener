@@ -4,7 +4,7 @@ import { Phone, Mail, MapPin } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useWhatsAppUrl } from "@/lib/whatsapp";
 
-const SITE_URL = "https://casa-sener.vercel.app";
+const SITE_URL = "https://www.matafuegossener.com.ar";
 
 const WA_ICON = (
   <svg className="w-6 h-6 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -86,7 +86,7 @@ export default function Contact() {
             </div>
             <div>
               <p className="text-white/60 text-xs font-semibold">Escaneá para compartir</p>
-              <p className="text-white/40 text-xs font-mono mt-0.5">casa-sener.vercel.app</p>
+              <p className="text-white/40 text-xs font-mono mt-0.5">matafuegossener.com.ar</p>
             </div>
           </div>
         </div>
