@@ -20,13 +20,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Matafuegos Sener" }],
   alternates: {
-    canonical: "https://casasener.vercel.app",
+    canonical: "https://www.matafuegossener.com.ar",
   },
   openGraph: {
     title: "Matafuegos Sener — Recarga y Servicio en CABA",
     description:
       "Tercera generación de familia de bomberos. Recargamos, controlamos y asesoramos en toda la Ciudad de Buenos Aires.",
-    url: "https://casasener.vercel.app",
+    url: "https://www.matafuegossener.com.ar",
     siteName: "Matafuegos Sener",
     locale: "es_AR",
     type: "website",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  metadataBase: new URL("https://casasener.vercel.app"),
+  metadataBase: new URL("https://www.matafuegossener.com.ar"),
 };
 
 export default function RootLayout({
@@ -63,7 +63,7 @@ export default function RootLayout({
     "name": "Matafuegos Sener",
     "alternateName": "Casa Sener",
     "description": "Servicio integral de matafuegos: recarga, control, venta y asesoramiento normativo en toda la Ciudad de Buenos Aires. Tercera generación de familia de bomberos.",
-    "url": "https://casasener.vercel.app",
+    "url": "https://www.matafuegossener.com.ar",
     "telephone": "+5491153180515",
     "address": {
       "@type": "PostalAddress",

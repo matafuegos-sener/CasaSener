@@ -75,8 +75,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:contacto@casasener.com.ar" className="hover:text-white transition-colors">
-                  contacto@casasener.com.ar
+                <a href="mailto:contacto@matafuegossener.com.ar" className="hover:text-white transition-colors">
+                  contacto@matafuegossener.com.ar
                 </a>
               </li>
               <li>Barrio Flores, Buenos Aires</li>

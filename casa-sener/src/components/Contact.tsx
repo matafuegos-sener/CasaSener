@@ -63,13 +63,13 @@ export default function Contact() {
             </div>
           </a>
 
-          <a href="mailto:contacto@casasener.com.ar" className={cardClass} aria-label="Enviar email a contacto@casasener.com.ar">
+          <a href="mailto:contacto@matafuegossener.com.ar" className={cardClass} aria-label="Enviar email a contacto@matafuegossener.com.ar">
             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
               <Mail className="w-5 h-5 text-white/70" aria-hidden="true" />
             </div>
             <div className="text-center">
               <p className="text-white font-semibold text-sm">Email</p>
-              <p className="text-white/50 text-sm mt-0.5">contacto@casasener.com.ar</p>
+              <p className="text-white/50 text-sm mt-0.5">contacto@matafuegossener.com.ar</p>
               <p className="text-white/40 text-xs mt-3 font-semibold group-hover:text-white/70 transition-colors">Escribir →</p>
             </div>
           </a>

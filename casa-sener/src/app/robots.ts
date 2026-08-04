@@ -11,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "anthropic-ai", allow: "/" },
       { userAgent: "Google-Extended", allow: "/" },
     ],
-    sitemap: "https://casasener.vercel.app/sitemap.xml",
+    sitemap: "https://www.matafuegossener.com.ar/sitemap.xml",
   };
 }
