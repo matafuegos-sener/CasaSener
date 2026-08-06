@@ -168,3 +168,43 @@ fix:
 reiterativo: no
 patrón: fetch-eager-de-tabla-completa-para-armar-un-select — cuando una pantalla dice "no navegues la base entera" pero el código baja todas las filas al montar solo para poblar dropdowns o filtrar en memoria, el síntoma es "tarda en cargar"/"aparece vacío" aunque los datos estén bien. El fix es separar "opciones livianas" (para los selects) de "lote pedido" (bajo demanda, filtrado en el servidor) — nunca bajar todo para filtrar del lado del cliente.
 ```
+
+```
+fecha: 2026-08-05
+area: panel-interno — MensajesPredefinidosView
+síntoma: Baltasar reportó que los mensajes predefinidos que había cargado de prueba "se borraron" — la vista mostraba "Todavía sin catálogo armado". Se solucionó solo al apretar F5.
+raíz: no hubo pérdida de datos — verificado con query directa a Supabase, las dos filas de prueba seguían en `mensajes_predefinidos` con su `canal` correcto. El bug es de la UI: `MensajesPredefinidosView.tsx` hace `setMensajes(Array.isArray(data) ? data : [])` sobre la respuesta del GET — si el fetch falla por cualquier motivo (sesión vencida a las 12hs según `login/route.ts`, error 500, etc.), la API devuelve `{ error: "..." }`, que no es array, y cae directo a `[]`. Eso es indistinguible en pantalla de "catálogo realmente vacío". El F5 disparó un fetch nuevo que esta vez funcionó, por eso "se solucionó solo".
+fix: pendiente — no aplicado todavía, Baltasar priorizó seguir con otra tarea. Cuando se retome: distinguir en `MensajesPredefinidosView.tsx` el estado de error real (mostrar mensaje + opción de reintentar/re-loguear) del estado "catálogo vacío", en vez de colapsar los dos casos al mismo `[]`.
+reiterativo: no
+patrón: error-de-fetch-tratado-como-lista-vacia — cualquier `setState(Array.isArray(data) ? data : [])` sobre una respuesta de API esconde errores reales (401, 500) detrás del mismo estado visual que "no hay datos". Repetir este chequeo en otras vistas del panel que tengan el mismo patrón (fetch + fallback a array vacío sin distinguir error).
+```
+
+```
+fecha: 2026-08-05
+area: panel-interno — CRM (filtro Activo/Inactivo)
+síntoma: Baltasar reportó que en CRM, filtrar por "Solo activos" traía todos los contactos, y "Solo inactivos" no traía ninguno.
+raíz: `src/app/api/admin/crm/lote/route.ts` tenía código de antes de la migración `0006_uniformar_base.sql`: en ese momento `leads_base` no tenía columna `activo`, así que el endpoint directamente saltaba el filtro de activo entero para esa tabla (`if (activo !== "no") { ...consulta leads_base sin filtro de activo... }`). La migración 0006 ya había agregado `activo` a `leads_base` (confirmado, aplicada), pero nadie actualizó este endpoint para usarla — quedó código muerto que ignoraba el filtro en la tabla que tiene el 100% de los datos reales (9.541 filas, `contactos` está vacía). Por eso "activos" traía todo (sin filtro) y "inactivos" traía cero (la tabla entera quedaba excluida por el `if`).
+fix: se sacó el `if` que saltaba `leads_base` y se aplica `activo` igual que en `contactos`. Además, "Solo inactivos" ahora matchea `activo = false` **o** `activo IS NULL` — confirmado con Baltasar que en esta etapa (sin ninguna acción ejecutada todavía) un contacto sin ese dato cargado es inactivo en la práctica, no un tercer estado aparte. Archivo: `panel-interno/src/app/api/admin/crm/lote/route.ts`.
+reiterativo: no
+patrón: filtro-no-actualizado-tras-migracion — cuando una migración agrega una columna a una tabla que antes no la tenía, buscar explícitamente los endpoints que tenían un `if`/comentario tipo "esta tabla no tiene esta columna" escrito ANTES de esa migración — quedan filtrando (o salteando) con una premisa que ya no es cierta.
+```
+
+```
+fecha: 2026-08-05
+area: panel-interno — CRM (campo `categoria` se pisaba)
+síntoma: Baltasar reportó, más de una vez, que el campo de categoría del contacto "se pisa" — pidió una solución definitiva.
+raíz: `categoria` mezclaba dos cosas de negocio distintas en un solo campo: (A) por qué canal se contactó a un contacto frío (mail/WhatsApp/llamada — TIPO_A_CATEGORIA) y (B) el seguimiento comercial del CRM (llamar luego, presupuesto pedido/enviado, pedido entregado, problema). El bug concreto: `PATCH /api/admin/crm/contactos/[id]/estado` (usado al marcar un envío masivo de WhatsApp/mail como enviado) pisaba `categoria` sin condición ninguna (`if (body.whatsapp_enviado) update.categoria = "contactado_whatsapp"`) — si un contacto ya tenía un estado más relevante cargado ahí, un envío masivo posterior lo tapaba sin que hubiera forma de saberlo, porque solo existía un campo y una sola etiqueta visible.
+fix: migración `0008_estado_crm.sql` agrega columna `estado_crm` a `contactos` y `leads_base`, independiente de `categoria`. `TIPO_A_CATEGORIA` (eje A) queda igual; `TIPO_A_ESTADO_CRM` (eje B, nuevo, en `src/data/crm.ts`) mapea cotización pedida/enviada, pedido entregado y problema; "llamar_luego" se asigna cuando se carga una próxima acción sin que el tipo de interacción tenga un estado más específico. `POST /api/admin/crm/contactos/[id]/interacciones` actualiza los dos ejes en un solo `update()`, cada uno solo si corresponde. Los endpoints de envío masivo (`estado/route.ts`, `mail/enviar/route.ts`) siguen tocando únicamente `categoria` — nunca fueron tocados para escribir en `estado_crm`, así que estructuralmente no pueden volver a pisarlo. UI: `CrmView.tsx` muestra los dos ejes por separado (columna nueva en la tabla, badge aparte en la ficha) y "Estado CRM" es un filtro más en `FiltrosContactos.tsx`. **Falta un paso manual:** aplicar `0008_estado_crm.sql` en el SQL Editor de Supabase — hasta entonces, cargar una interacción de tipo cotización/pedido/problema sigue guardando la interacción bien, pero el `estado_crm` no se persiste (falla en silencio, no rompe el flujo).
+reiterativo: no
+patrón: un-solo-campo-para-dos-ejes-de-negocio — cuando dos cosas conceptualmente distintas (acá: canal de contacto vs. seguimiento comercial) comparten una sola columna porque "total es una categoría", cualquier código que actualice una la pisa sin querer. Señal de alarma: un `update` sin condición sobre un campo que también actualiza otro flujo del sistema.
+```
+
+```
+fecha: 2026-08-05
+area: panel-interno — CRM (`categoria`/`estado_crm` sin fecha)
+síntoma: (no es un bug -- pedido explícito) Baltasar pidió que las categorías tengan fecha: si un contacto fue contactado por mail durante un mailing en curso, tiene que poder verse en qué fecha se le mandó.
+raíz: la fecha existía a medias. `mail_enviado_en`/`whatsapp_enviado_en` (de la migración 0005) sí se guardan en la fila del contacto, pero nunca se muestran en ningún lugar del panel -- ni en la tabla del CRM ni en la ficha del contacto. Para el resto de los caminos que mueven `categoria` (llamada, reunión, registradas a mano desde el CRM) no había ninguna fecha propia guardada en la fila -- solo quedaba en el historial de `interacciones`, una tabla aparte. Y `estado_crm` (recién creado ese mismo día) no tenía fecha en absoluto.
+fix: migración `0009_fecha_categoria.sql` agrega `categoria_actualizada_en` y `estado_crm_actualizado_en` a `contactos` y `leads_base` -- una sola fecha por eje, escrita por los tres lugares que tocan cada campo (`POST interacciones`, `PATCH estado`, `POST mail/enviar`), así no importa por qué camino cambió, siempre queda registrado cuándo. Se muestra al lado de cada badge en `CrmView.tsx` (ficha del contacto) y como subtexto en la tabla del lote. No se tocó `mail_enviado_en`/`whatsapp_enviado_en` -- siguen cumpliendo su rol original (evitar reenviar a quien ya se le mandó), la fecha nueva es la que se ve en pantalla.
+reiterativo: no
+patrón: dato-guardado-pero-nunca-mostrado — antes de asumir que hace falta una columna nueva, revisar si el dato ya existe en la tabla y simplemente no está en ningún componente de la UI (acá `mail_enviado_en`/`whatsapp_enviado_en` ya existían desde 0005 y nunca se habían mostrado).
+```
