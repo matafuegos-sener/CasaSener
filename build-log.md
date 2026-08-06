@@ -208,3 +208,13 @@ fix: migración `0009_fecha_categoria.sql` agrega `categoria_actualizada_en` y `
 reiterativo: no
 patrón: dato-guardado-pero-nunca-mostrado — antes de asumir que hace falta una columna nueva, revisar si el dato ya existe en la tabla y simplemente no está en ningún componente de la UI (acá `mail_enviado_en`/`whatsapp_enviado_en` ya existían desde 0005 y nunca se habían mostrado).
 ```
+
+```
+fecha: 2026-08-05
+area: panel-interno — CRM (vigencia de 1 año, `activo` automático)
+síntoma: (no es un bug -- pedido explícito) Baltasar propuso que `activo` se active solo al detectar una venta, dato de negocio: los matafuegos tienen 1 año de vigencia desde que se venden, y conviene un recontacto a los 11 meses para ofrecer la recarga antes de que venza.
+raíz: n/a -- diseño nuevo. El problema a evitar era depender de un cron para "apagar" `activo` al cumplirse el año -- este proyecto no tiene ninguna infraestructura de cron, y guardar un booleano estático que nadie actualiza después se vuelve mentira con el tiempo (mismo tipo de problema que ya se vio con `mail_enviado_en` sin mostrar, aunque acá el riesgo es peor: un dato mal mantenido, no solo invisible).
+fix: migración `0010_vigencia_activo.sql` agrega `vigencia_hasta` (date) a `contactos`/`leads_base`. Al registrar la interacción "Pedido entregado" (`POST interacciones/route.ts`): `activo = true` y `vigencia_hasta` = hoy + 1 año, calculados en el momento, más una `acción` automática (mismo mecanismo que "próxima acción" del formulario, `registrado_por: "Sistema"`) con `fecha_ejecucion` = hoy + 11 meses. El filtro Activo/Inactivo (`crm/lote/route.ts`) NO confía en el booleano guardado solo -- compara `vigencia_hasta` contra la fecha de hoy en cada consulta (`activo=true AND (vigencia_hasta is null OR vigencia_hasta >= hoy)`), así que un contacto vendido hace más de un año vuelve a filtrar como inactivo sin que nada lo tenga que apagar. Mismo criterio en el badge de la ficha (`CrmView.tsx`): compara la fecha en el cliente, no lee `activo` crudo.
+reiterativo: no
+patrón: booleano-que-vence-sin-cron — cuando un estado tiene fecha de expiración de negocio (acá: 1 año) y no hay cron/job disponible para mantenerlo al día, no guardar un flag estático -- guardar la fecha de corte y comparar en cada lectura. El flag (`activo`) puede seguir existiendo para casos sin fecha, pero la fecha manda cuando está presente.
+```
